@@ -16,12 +16,14 @@ class Class
       m = instance_method(nombreDelMetodo)
 
         define_method(nombreDelMetodo) do |*args2, &bloqueMetodo|
+
           proc{unless self.instance_exec &bloqueCondicion then raise "La condicion de algun invariant no se cumple" end}.call
           m.bind(self).(*args2, &bloqueMetodo)
           proc{unless self.instance_exec &bloqueCondicion then raise "La condicion de algun invariant no se cumple" end}.call
+
         end
-      end
       @@newMethod=true
+      end
     end
   end
 end
