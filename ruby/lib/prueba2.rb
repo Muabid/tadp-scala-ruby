@@ -10,19 +10,17 @@ class Class
   end
 
   def invariant(&bloque)
-    nonGetterOrSetterMethods.each do |name|
-      m = instance_method(name)
-      define_method(name) do |*args, &block|
-        proc{unless self.instance_exec &bloque then raise "La condicion de algun invariant no se cumple" end}.call
-        result=m.bind(self).(*args, &block)
-        proc{unless self.instance_exec &bloque then raise "La condicion de algun invariant no se cumple" end}.call
-        result
+      nonGetterOrSetterMethods.each do |name|
+        m = instance_method(name)
+        define_method(name) do |*args, &block|
+          proc{unless self.instance_exec &bloque then raise "La condicion de algun invariant no se cumple" end}.call
+          result=m.bind(self).(*args, &block)
+          proc{unless self.instance_exec &bloque then raise "La condicion de algun invariant no se cumple" end}.call
+          result
+        end
       end
-    end
   end
 end
-
-
 
 class MiClase
 

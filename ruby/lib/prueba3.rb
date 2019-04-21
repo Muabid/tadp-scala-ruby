@@ -1,28 +1,43 @@
+class ProcAndContext
+  attr_accessor :proc,:contexto
+  def initialize(proc)
+    self.proc=proc
+  end
+
+  def executeInContext
+    contexto.instance_eval &proc
+  end
+end
 
 class Class
   @@newMethod = true
-
-  #Esta solucion no permite dos invariant
+  @@invariantBlocks=[ProcAndContext.new(proc{true})]
+  @@validation= proc{|procAndContext|
+  unless procAndContext.executeInContext then raise "La condicion de algun invariant no se cumple" end}
 
   def invariant(&bloqueCondicion)
-    puts "mensaje 1"
-    methodAdded= self.singleton_class.instance_method(:method_added)
-    puts self
-    puts "mensaje 2"
+
+    @@invariantBlocks.push(ProcAndContext.new(bloqueCondicion))
+
     self.singleton_class.define_method(:method_added) do |*args,&bloqueMethodAdded|
       if(@@newMethod) then
         @@newMethod=false
-        puts "mensaje 3"
-      puts self
-      methodAdded.bind(self).(*args,&bloqueMethodAdded)
+        puts self
       nombreDelMetodo=args.first
-
       m = instance_method(nombreDelMetodo)
 
         define_method(nombreDelMetodo) do |*args2, &bloqueMetodo|
-          proc{unless self.instance_exec &bloqueCondicion then raise "La condicion de algun invariant no se cumple" end}.call if nombreDelMetodo.to_s!= "initialize"
+
+          @@invariantBlocks.each{|procAndContext|
+            procAndContext.contexto=self
+          @@validation.call(procAndContext) if nombreDelMetodo.to_s!= "initialize"} #invariant
+
           result =m.bind(self).(*args2, &bloqueMetodo)
-          proc{unless self.instance_exec &bloqueCondicion then raise "La condicion de algun invariant no se cumple" end}.call
+
+          @@invariantBlocks.each{|procAndContext|
+            procAndContext.contexto=self
+            @@validation.call(procAndContext)} #invariant
+
           result
         end
       @@newMethod=true
