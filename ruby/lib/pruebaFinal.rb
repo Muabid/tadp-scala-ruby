@@ -68,43 +68,7 @@ class Class
   end
 end
 
-class MiClase
 
-  attr_accessor :energia,:gordura
-
-  invariant{energia>30}
-  invariant{gordura>5}
-
-  def initialize()
-    self.energia=25
-    self.gordura=9
-  end
-
-  pre{energia==25}
-  post{energia==26}
-
-  def subirEnegia
-    self.energia+=1
-  end
-
-  post {gordura>7}
-
-  def desengordar
-    self.gordura-=1
-  end
-  pre{energia>=26}
-  post{engordar<=30}
-
-  def engordarConPanchos
-    self.energia+=1
-    self.gordura-=1
-  end
-
-  def comerSano
-    self.energia+=1
-    self.gordura-=1
-  end
-end
 
 
 
