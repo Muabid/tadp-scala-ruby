@@ -1,5 +1,9 @@
-describe pruebaFinal.rb do
-  let(:prueba) { Prueba.new }
+describe pruebaFinal do
+  let(:prueba) {
+    class MiClass
+      puts "hola"
+    end
+  }
 
   describe '#materia' do
     it 'debería pasar este test' do

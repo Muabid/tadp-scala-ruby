@@ -68,7 +68,35 @@ class Class
   end
 end
 
+class MiClass
+  attr_accessor :energia,:gordura
 
+  def initialize()
+    self.energia=25
+    self.gordura=10
+  end
+  #invariant{energia>5}
+  #invariant{energia<30}
+
+  pre{energia>10}
+  post{energia==1}
+
+  def hacerEjercicio
+    self.energia-=1
+  end
+
+  post{gordura==10}
+
+  def comerNachos
+    self.gordura+=1
+  end
+
+  post{|result| result==energia+litros}
+  def tomarMonster(litros)
+    self.energia+=litros
+  end
+
+end
 
 
 
