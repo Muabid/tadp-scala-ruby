@@ -2,34 +2,49 @@ module Contract
   @@newMethod = true
 
   def self.extended(mod)
-    mod.class_variable_set :@@befores, []
-    mod.class_variable_set :@@afters, []
+    mod.class_variable_set :@@pres, [Pre.new(proc {true})]
+    mod.class_variable_set :@@posts, [Post.new(proc {true})]
+    mod.class_variable_set :@@invariants, [Invariant.new(proc {true})]
+    puts mod
   end
 
   def before_and_after_each_call(before, after,klass = ContractType)
+    puts klass
+    invariants = self.class_variable_get(:@@invariants)
+    puts invariants
+    pres = self.class_variable_get(:@@pres)
+    puts pres
+    posts = self.class_variable_get(:@@posts)
+    puts posts
+    klass.addToContract(before,after,self)
 
-    befores = self.class_variable_get(:@@befores)
-    afters = self.class_variable_get(:@@afters)
-
-    befores.push(klass.new(before))
-    afters.push(klass.new(after))
+    presCopia=pres
+    postCopia=posts
 
     self.define_singleton_method(:method_added) do |method|
-      befores.last.instance_variable_set :@method,method
-      afters.last.instance_variable_set :@method,method
-
+      pres.last.instance_variable_set :@method,method
+      posts.last.instance_variable_set :@method,method
+      puts pres.last
+      puts posts.last
       if (@@newMethod) then
         @@newMethod = false
         m = instance_method(method.to_s)
         define_method(method) do |*args, &block|
-          befores.each {|x| x.call(self,method)}
+         # presCopia.last.call(self,method)
+         # puts presCopia
+          klass.new(before).call(self ,method,*args)
           result = m.bind(self).(*args, &block)
-          afters.each {|x| x.call(self,method,result)}
+          puts result
+          invariants.each {|x| x.call(self,method,result)}
+          #puts invariants
+          #postCopia.last.call(self,method,result)
+          klass.new(after).call(self ,method,result)
           result
         end
         @@newMethod = true
       end
     end
+
   end
 
   def invariant(&block)
@@ -37,11 +52,11 @@ module Contract
   end
 
   def pre(&block)
-    before_and_after_each_call(block,proc{true},PrePost)
+    before_and_after_each_call(block,proc{true},Pre)
   end
 
   def post(&block)
-    before_and_after_each_call(proc{true},block,PrePost)
+    before_and_after_each_call(proc{true},block,Post)
   end
 
   class ContractType
@@ -54,6 +69,7 @@ module Contract
     def call(object,method,*args)
       object.instance_exec(*args,&@proc)
     end
+
   end
 
   class Invariant < ContractType
@@ -63,16 +79,41 @@ module Contract
         raise "No se cumple el invariant"
       end
     end
+
+    def self.addToContract(pre,post,klass)
+      puts klass
+      klass.class_variable_get(:@@invariants).push(Invariant.new(post))
+    end
   end
 
-  class PrePost < ContractType
+  class Pre < ContractType
     def call(object,method,*args)
-      if method.equal? @method then
+
         unless super(object,method,*args) then
           raise "ASFJAJFJSAI"
         end
-      end
+
     end
+
+    def self.addToContract(pre,post,klass)
+      klass.class_variable_get(:@@pres).push(Post.new(post))
+    end
+  end
+
+  class Post < ContractType
+
+    def self.addToContract(pre,post,klass)
+      klass.class_variable_get(:@@posts).push(Post.new(pre))
+    end
+
+    def call(object,method,*args)
+
+        unless super(object,method,*args) then
+          raise "Post rompio mostro"
+        end
+
+    end
+
   end
 end
 
@@ -84,9 +125,14 @@ class Clase
     @energia = 10
   end
 
-  post {|res| res >10}
+  invariant { 2 == 2}
+
+
+  pre {energia > 10 }
+  post {|res| res <10}
   def hola
     @energia = 18
+    3463
   end
 
 end
