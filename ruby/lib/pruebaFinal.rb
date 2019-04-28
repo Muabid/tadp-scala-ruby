@@ -5,40 +5,36 @@ module Contract
     mod.class_variable_set :@@pres, [Pre.new(proc {true})]
     mod.class_variable_set :@@posts, [Post.new(proc {true})]
     mod.class_variable_set :@@invariants, [Invariant.new(proc {true})]
-    puts mod
   end
 
   def before_and_after_each_call(before, after,klass = ContractType)
-    puts klass
-    invariants = self.class_variable_get(:@@invariants)
-    puts invariants
-    pres = self.class_variable_get(:@@pres)
-    puts pres
-    posts = self.class_variable_get(:@@posts)
-    puts posts
+
     klass.addToContract(before,after,self)
 
-    presCopia=pres
-    postCopia=posts
-
     self.define_singleton_method(:method_added) do |method|
-      pres.last.instance_variable_set :@method,method
-      posts.last.instance_variable_set :@method,method
-      puts pres.last
-      puts posts.last
       if (@@newMethod) then
         @@newMethod = false
+
+        invariants = self.class_variable_get(:@@invariants)
+        pres = self.class_variable_get(:@@pres)
+        posts = self.class_variable_get(:@@posts)
+
+        presCopia=pres.map(&:clone)
+        postCopia=posts.map(&:clone)
+
+        pres.push(Pre.new(proc {true}))
+
+        posts.push(Post.new(proc {true}))
+
         m = instance_method(method.to_s)
+
         define_method(method) do |*args, &block|
-         # presCopia.last.call(self,method)
-         # puts presCopia
-          klass.new(before).call(self ,method,*args)
+          presCopia.last.call(self,method,*args)
+
           result = m.bind(self).(*args, &block)
-          puts result
           invariants.each {|x| x.call(self,method,result)}
-          #puts invariants
-          #postCopia.last.call(self,method,result)
-          klass.new(after).call(self ,method,result)
+
+          postCopia.last.call(self,method,result)
           result
         end
         @@newMethod = true
@@ -81,7 +77,6 @@ module Contract
     end
 
     def self.addToContract(pre,post,klass)
-      puts klass
       klass.class_variable_get(:@@invariants).push(Invariant.new(post))
     end
   end
@@ -90,20 +85,20 @@ module Contract
     def call(object,method,*args)
 
         unless super(object,method,*args) then
-          raise "ASFJAJFJSAI"
+          raise "Pre no se cumple"
         end
 
     end
 
     def self.addToContract(pre,post,klass)
-      klass.class_variable_get(:@@pres).push(Post.new(post))
+      klass.class_variable_get(:@@pres).push(Pre.new(pre))
     end
   end
 
   class Post < ContractType
 
     def self.addToContract(pre,post,klass)
-      klass.class_variable_get(:@@posts).push(Post.new(pre))
+      klass.class_variable_get(:@@posts).push(Post.new(post))
     end
 
     def call(object,method,*args)
@@ -117,26 +112,42 @@ module Contract
   end
 end
 
-class Clase
+class Object
   extend Contract
+end
+
+class Clase
   attr_accessor :energia
 
   def initialize
     @energia = 10
   end
 
-  invariant { 2 == 2}
+  invariant { energia < 11}
+  invariant { true }
 
-
-  pre {energia > 10 }
+  pre {energia > 9 }
   post {|res| res <10}
   def hola
-    @energia = 18
-    3463
+    @energia = 10
+  end
+
+  pre {energia > 11}
+  post {false}
+  def chau(energia)
+    2
+  end
+
+  post {|res| nil == res}
+  def chupar(limon)
+
   end
 
 end
 
-puts Clase.new.hola
+
+lengua = Clase.new
+puts lengua.chupar(nil)
+
 
 
