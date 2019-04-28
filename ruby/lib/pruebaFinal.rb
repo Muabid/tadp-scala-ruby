@@ -1,3 +1,14 @@
+
+
+class InvariantError < RuntimeError
+end
+
+class PreError < RuntimeError
+end
+
+class PostError < RuntimeError
+end
+
 module Contract
   @@newMethod = true
 
@@ -85,7 +96,7 @@ module Contract
     def call(object,method,result,*args,listaDeNombres)
       result = super(object,method,result,*args,listaDeNombres)
       unless result then
-        raise "No se cumple el invariant"
+         raise InvariantError
       end
     end
 
@@ -98,7 +109,7 @@ module Contract
     def call(object,method,result,*args,listaDeNombres)
 
         unless super(object,method,result,*args,listaDeNombres) then
-          raise "Pre no se cumple"
+          raise PreError
         end
 
     end
@@ -117,47 +128,12 @@ module Contract
     def call(object,method,result,*args,listaDeNombres)
 
         unless super(object,method,result,*args,listaDeNombres) then
-          raise "Post rompio mostro"
+          raise PostError
         end
 
     end
 
   end
-end
-
-class Object
-
-end
-
-class Clase
-  extend Contract
-  attr_accessor :energia
-
-  def initialize
-    @energia = 10
-  end
-
-  invariant { energia < 11}
-  invariant { true }
-
-  pre {energia > 9 }
-  post {|res| res <10}
-  def hola
-    @energia = 10
-  end
-
-  pre {energia > 11}
-  post {false}
-  def chau(energia)
-    2
-  end
-
-  pre {limon == 1}
-  post {|res| res == limon}
-  def chupar(limon)
-    limon
-  end
-
 end
 
 
