@@ -28,13 +28,17 @@ module Contract
 
         m = instance_method(method.to_s)
 
+        listaDeNombresParametros= m.parameters.flat_map {|tupla| tupla.last}
+
+
         define_method(method) do |*args, &block|
-          presCopia.last.call(self,method,*args)
+
+          presCopia.last.call(self,method,nil,*args,listaDeNombresParametros)
 
           result = m.bind(self).(*args, &block)
-          invariants.each {|x| x.call(self,method,result)}
+          invariants.each {|x| x.call(self,method,result,nil,nil)}
 
-          postCopia.last.call(self,method,result)
+          postCopia.last.call(self,method,result,*args,listaDeNombresParametros)
           result
         end
         @@newMethod = true
@@ -62,15 +66,24 @@ module Contract
       @proc = proc
     end
 
-    def call(object,method,*args)
-      object.instance_exec(*args,&@proc)
+    def call(object,method,result,*args,listaDeNombres)
+      copy = object.clone
+      if(listaDeNombres!=nil ) then
+      values = listaDeNombres.zip(args)
+      values.each do |tupla|
+        copy.define_singleton_method (tupla[0]) do
+          tupla[1]
+        end
+      end
+      end
+      copy.instance_exec(result,&@proc)
     end
 
   end
 
   class Invariant < ContractType
-    def call(object,method,*args)
-      result = super(object,method)
+    def call(object,method,result,*args,listaDeNombres)
+      result = super(object,method,result,*args,listaDeNombres)
       unless result then
         raise "No se cumple el invariant"
       end
@@ -82,9 +95,9 @@ module Contract
   end
 
   class Pre < ContractType
-    def call(object,method,*args)
+    def call(object,method,result,*args,listaDeNombres)
 
-        unless super(object,method,*args) then
+        unless super(object,method,result,*args,listaDeNombres) then
           raise "Pre no se cumple"
         end
 
@@ -101,9 +114,9 @@ module Contract
       klass.class_variable_get(:@@posts).push(Post.new(post))
     end
 
-    def call(object,method,*args)
+    def call(object,method,result,*args,listaDeNombres)
 
-        unless super(object,method,*args) then
+        unless super(object,method,result,*args,listaDeNombres) then
           raise "Post rompio mostro"
         end
 
@@ -113,10 +126,11 @@ module Contract
 end
 
 class Object
-  extend Contract
+
 end
 
 class Clase
+  extend Contract
   attr_accessor :energia
 
   def initialize
@@ -138,16 +152,13 @@ class Clase
     2
   end
 
-  post {|res| nil == res}
+  pre {limon == 1}
+  post {|res| res == limon}
   def chupar(limon)
-
+    limon
   end
 
 end
-
-
-lengua = Clase.new
-puts lengua.chupar(nil)
 
 
 
