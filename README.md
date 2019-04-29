@@ -1,3 +1,8 @@
-# TADP
+# TADP IS UNBREAKABLE ! 
 
-Este repositorio tiene la estructura básica para arrancar a _darle átomos_ a la materia! :rocket:
+![alt text](https://66.media.tumblr.com/3ca8492403f163e3193f5cf6654aaf00/tumblr_inline_ofa3yqCFnb1ttrl6y_1280.jpg)
+
+Un grupo de jovenes deben usar sus poderes llamados Stand para encontrar y vencer a Yoshikage Kira (alias "el manitas"), un asesino de las buenas prácticas.
+
+En este momento se encuentran en la región de Ruby, metaprogramando con de todo para encontrar al asesino. 
+
