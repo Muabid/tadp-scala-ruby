@@ -44,10 +44,10 @@ module Contract
 
         define_method(method) do |*args, &block|
 
-          presCopia.last.call(self,method,nil,*args,listaDeNombresParametros)
+          presCopia.last.preCall(self,method,*args,listaDeNombresParametros)
 
           result = m.bind(self).(*args, &block)
-          invariants.each {|x| x.call(self,method,result,nil,nil)}
+          invariants.each {|x| x.invariantCall(self,method,result)}
 
           postCopia.last.call(self,method,result,*args,listaDeNombresParametros)
           result
@@ -93,6 +93,11 @@ module Contract
   end
 
   class Invariant < ContractType
+
+    def invariantCall(object,method,result)
+      self.call(object,method,result,nil,nil)
+    end
+
     def call(object,method,result,*args,listaDeNombres)
       result = super(object,method,result,*args,listaDeNombres)
       unless result then
@@ -103,9 +108,16 @@ module Contract
     def self.addToContract(pre,post,klass)
       klass.class_variable_get(:@@invariants).push(Invariant.new(post))
     end
+
   end
 
   class Pre < ContractType
+
+    def preCall(object,method,*args,listaDeNombres)
+      self.call(object,method,nil,*args,listaDeNombres)
+    end
+
+
     def call(object,method,result,*args,listaDeNombres)
 
         unless super(object,method,result,*args,listaDeNombres) then
