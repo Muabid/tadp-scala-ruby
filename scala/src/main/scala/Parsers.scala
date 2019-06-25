@@ -10,45 +10,51 @@ object TiposParser {
   def esLetra(c:Char) : Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
 
   trait Parser{
-    def verificarVacio(string: String): Estado ={
-      if string.equals("") return Incorrecto
-    }
-  }
-
-  case object AnyCharParser extends Parser{
-    def parsear(stringAParsear: String): Estado ={
-      verificarVacio(stringAParsear)
-      return Correcto(Some(stringAParsear.take(1)))
-    }
-  }
-  case object CharParser(caracter: Char) extends Parser{
-    def parsear(stringAParsear: String): Estado ={
-      verificarVacio(stringAParsear)
-      var retornoParseo = if (stringAParsear.contains(caracter))  Correcto(Some(caracter.toString)) else Incorrecto
-      return retornoParseo
-    }
-  }
-  case object VoidParser extends Parser{
-    def parsear(stringAParsear: String): Estado ={
-      verificarVacio(stringAParsear)
-      return Correcto(None)
-    }
-  }
-  case object LetterParser extends Parser{
-    def parsear(stringAParsear: String): Estado ={
-      verificarVacio(stringAParsear)
-      for(caracter <- stringAParsear){
-        if (esLetra(caracter)){
-          return Correcto(Some(caracter.toString))
+    def devolverPrimerCharQueCumple(f: Char => Boolean, stringAChequear: String): Estado{
+      for(caracter <- stringAChequear){
+        if (f(caracter)){
+          return Correcto(Some(caracter))
         }
       }
       return Incorrecto
     }
+
+    def parsear(string: String): T
+
+    def verificarVacio(string: String): Estado ={
+      if string.equals("") Incorrecto
+    }
   }
-  case object DigitParser extends Parser{
+
+  object AnyCharParser extends Parser{
+    def parsear(stringAParsear: String): Estado ={
+      verificarVacio(stringAParsear)
+      Correcto(Some(stringAParsear.head))
+    }
+  }
+  object CharParser(caracter: Char) extends Parser{
+    def parsear(stringAParsear: String): Estado ={
+      if (stringAParsear.contains(caracter))  Correcto(Some(caracter.toString)) else Incorrecto
+    }
+  }
+  object VoidParser extends Parser{
+    def parsear(stringAParsear: String): Estado ={
+      verificarVacio(stringAParsear)
+      return Correcto(Unit)
+    }
+  }
+
+  object LetterParser extends Parser {
+    def parsear(stringAParsear: String): Estado ={
+      devolverPrimerCharQueCumple(esLetra,stringAParsear)
+    }
+  }
+
+  object DigitParser extends Parser{
     def parsear(stringAParsear: String): Estado ={
       verificarVacio(stringAParsear)
       for(caracter <- stringAParsear){
+        //ver como meter el isDigit en "devolverPrimerCharQueCumple"
         if (caracter.isDigit){
           return Correcto(Some(caracter.toString))
         }
@@ -56,13 +62,13 @@ object TiposParser {
       return Incorrecto
     }
   }
-  case object AlphaNumParser extends Parser{
-    def cumpleConLetraODigito()
-
-    def parsear (stringAParsear: String): Estado ={
-      ???
+  object AlphaNumParser extends Parser{
+    def parsear(stringAParsear: String): Estado ={
+      stringAParsear match {
+        ???
+      }
     }
   }
-  case object StringParser extends Parser
+  object StringParser extends Parser
 
 }
