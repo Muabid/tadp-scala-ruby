@@ -1,3 +1,5 @@
+import TiposParser.DigitParser.devolverPrimerCharQueCumple
+
 import scala.util
 import scala.util.{Failure, Success, Try}
 //Parsers.scala:
@@ -8,10 +10,6 @@ import scala.util.{Failure, Success, Try}
 //el estado que devuelve el parser anterior para saber si debe o no actuar
 package object TiposParser {
 
-  def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
-
-  def esDigito(c: Char): Boolean = c.isDigit
-
   trait FirstChar {
     def devolverPrimerCharQueCumple(f: Char => Boolean, stringAChequear: String): Try[Char] = {
       for (caracter <- stringAChequear) {
@@ -19,8 +17,13 @@ package object TiposParser {
           return Success(caracter)
         }
       }
-      Failure(throw new ParserException("Ningun char devuelve la condicion"))
+      Failure(new ParserException("Ningun char devuelve la condicion"))
     }
+    def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
+
+    def esDigito(c: Char): Boolean = c.isDigit
+
+    def esLetraODigito(c: Char): Boolean = esLetra(c) || esDigito(c)
   }
 
   trait Parser[T] extends Function[String,Try[T]]{
@@ -72,13 +75,7 @@ package object TiposParser {
 
     object AlphaNumParser extends Parser[Char] with FirstChar {
       def apply(stringAParsear: String): Try[Char] = {
-        DigitParser.apply(stringAParsear) match {
-          case Success(digito: Char) => Success(digito)
-          case Failure(_) => LetterParser.apply(stringAParsear) match {
-            case Success(letra: Char) => Success(letra)
-            case Failure(_) => Failure( new ParserException("El string no tiene ni digitos ni letras"))
-          }
-        }
+        devolverPrimerCharQueCumple(esLetraODigito, stringAParsear)
       }
     }
 
@@ -87,7 +84,6 @@ package object TiposParser {
         texto.contains(stringAEncontrar) match {
           case true => Success(stringAEncontrar)
           case false => Failure(new ParserException("No se contiene el string en el texto"))
-          case _ => ???
         }
       }
     }

@@ -58,8 +58,45 @@ class ParserTest extends FreeSpec with Matchers {
       }
     }
     "DigitParser"-{
-      "al parsear 1234 devuelve 1" in{
+      "al parsear 1234 devuelve Success 1" in{
         assertParsesSucceededWithResult(DigitParser.apply("1234"),Success('1'))
+      }
+      "al parsear a1234 devuelve Success 1" in{
+        assertParsesSucceededWithResult(DigitParser.apply("a1234"),Success('1'))
+      }
+      "al parsear abcd da Failure" in{
+        assertParseFailed(DigitParser.apply("abcd").get)
+      }
+    }
+    "AlphaNumParser"-{
+      "al parsear 1234 devuelve Success 1" in{
+        assertParsesSucceededWithResult(AlphaNumParser.apply("1234"),Success('1'))
+      }
+      "al parsear a1234 devuelve Success a" in{
+        assertParsesSucceededWithResult(AlphaNumParser.apply("a1234"),Success('a'))
+      }
+      "al parsear 1asss12 devuelve Success 1" in{
+        assertParsesSucceededWithResult(AlphaNumParser.apply("1asss12"),Success('1'))
+      }
+      "al parsear un string vacio devuelve failure" in{
+        assertParseFailed(AlphaNumParser.apply("").get)
+      }
+    }
+    "StringParser"-{
+      "en un Parser de bob esponja si se parsea bob devuelve success de bob" in{
+        assertParsesSucceededWithResult(new StringParser("bob esponja").apply("bob"),Success("bob"))
+      }
+      "en un Parser de bob el constructor si se parsea constructor devuelve success de constructor" in{
+        assertParsesSucceededWithResult(new StringParser("bob el constructor").apply("constructor"),Success("constructor"))
+      }
+      "en un Parser de bob esponja si se parsea calamardo devuelve failure" in{
+        assertParseFailed(new StringParser("bob esponja").apply("calamardo").get)
+      }
+      "en un Parser de bob esponja si se parsea vacio devuelve success vacio" in{
+        assertParsesSucceededWithResult(new StringParser("bob el constructor").apply(""),Success(""))
+      }
+      "en un Parser de vacio si se parsea vacio devuelve success vacio" in{
+        assertParsesSucceededWithResult(new StringParser("").apply(""),Success(""))
       }
     }
   }
