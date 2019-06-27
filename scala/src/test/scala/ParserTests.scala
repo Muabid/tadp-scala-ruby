@@ -59,7 +59,7 @@ class ParserTest extends FreeSpec with Matchers {
     }
     "DigitParser"-{
       "al parsear 1234 devuelve 1" in{
-        assertParsesSucceededWithResult(LetterParser.apply("1234"),Success('1'))
+        assertParsesSucceededWithResult(DigitParser.apply("1234"),Success('1'))
       }
     }
   }
