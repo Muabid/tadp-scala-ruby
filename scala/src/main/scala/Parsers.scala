@@ -23,7 +23,8 @@ package object TiposParser {
     }
   }
 
-  trait Parser {
+  trait Parser[T] extends Function[String,Try[T]]{
+    def apply(v1: String): Try[T]
 
     def verificarVacio(string: String): Try[String] = {
       string match {
@@ -32,13 +33,14 @@ package object TiposParser {
       }
     }
   }
-    object AnyCharParser extends Function[String, Try[Char]] with Parser {
-      def apply(stringAParsear: String): Try[Char] = {
+
+    object AnyCharParser extends Parser[Char] {
+       def apply(stringAParsear: String): Try[Char] = {
         verificarVacio(stringAParsear).map(_.head)
       }
     }
 
-    class CharParser( caracter: Char) extends Function[String, Try[Char]] with Parser {
+    class CharParser( caracter: Char) extends Parser[Char] {
       def apply(stringAParsear: String): Try[Char] = {
         stringAParsear.indexOf(caracter) match {
           case 0 => Success(caracter)
@@ -47,7 +49,7 @@ package object TiposParser {
       }
     }
 
-    object VoidParser extends Function[String, Try[Unit]] with Parser {
+    object VoidParser extends  Parser[Unit] {
       def apply(stringAParsear: String): Try[Unit] = {
         verificarVacio(stringAParsear) match {
           case Success(_) => Success(Unit)
@@ -56,19 +58,19 @@ package object TiposParser {
       }
     }
 
-    object LetterParser extends Function[String, Try[Char]] with Parser with FirstChar {
+    object LetterParser extends  Parser[Char] with FirstChar {
       def apply(stringAParsear: String): Try[Char] = {
         devolverPrimerCharQueCumple(esLetra, stringAParsear)
       }
     }
 
-    object DigitParser extends Function[String, Try[Char]] with Parser with FirstChar {
+    object DigitParser extends  Parser[Char] with FirstChar {
       def apply(stringAParsear: String): Try[Char] = {
         devolverPrimerCharQueCumple(esDigito, stringAParsear)
       }
     }
 
-    object AlphaNumParser extends Function[String, Try[Char]] with Parser with FirstChar {
+    object AlphaNumParser extends Parser[Char] with FirstChar {
       def apply(stringAParsear: String): Try[Char] = {
         DigitParser.apply(stringAParsear) match {
           case Success(digito: Char) => Success(digito)
@@ -80,7 +82,7 @@ package object TiposParser {
       }
     }
 
-    class StringParser(texto: String) extends Function[String, Try[String]] with Parser {
+    class StringParser(texto: String) extends Parser[String] {
       def apply(stringAEncontrar: String): Try[String] = {
         texto.contains(stringAEncontrar) match {
           case true => Success(stringAEncontrar)
