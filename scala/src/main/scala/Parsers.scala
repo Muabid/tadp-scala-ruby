@@ -1,3 +1,4 @@
+import TiposCombinator.Combinator
 import TiposParser.DigitParser.devolverPrimerCharQueCumple
 
 import scala.util
@@ -10,6 +11,7 @@ import scala.util.{Failure, Success, Try}
 //el estado que devuelve el parser anterior para saber si debe o no actuar
 package object TiposParser {
 
+
   trait FirstChar {
     def devolverPrimerCharQueCumple(f: Char => Boolean, stringAChequear: String): Try[Char] = {
       for (caracter <- stringAChequear) {
@@ -19,6 +21,7 @@ package object TiposParser {
       }
       Failure(new ParserException("Ningun char devuelve la condicion"))
     }
+
     def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
 
     def esDigito(c: Char): Boolean = c.isDigit
@@ -26,7 +29,7 @@ package object TiposParser {
     def esLetraODigito(c: Char): Boolean = esLetra(c) || esDigito(c)
   }
 
-  trait Parser[T] extends Function[String,Try[T]]{
+  trait Parser[T] extends Function[String,Try[T]] {
     def apply(v1: String): Try[T]
 
     def verificarVacio(string: String): Try[String] = {
@@ -35,6 +38,15 @@ package object TiposParser {
         case _ => Success(string)
       }
     }
+    def <|>[A](parser: Parser[A]):Parser[A] ={
+      (str: String) => this.apply(str)  match {
+        case Success(x: A) => Success(x)
+        case Failure(_) => parser.apply(str)
+      }
+    }
+
+
+
   }
 
     object AnyCharParser extends Parser[Char] {
