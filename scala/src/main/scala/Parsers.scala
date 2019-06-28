@@ -1,4 +1,3 @@
-import TiposCombinator.Combinator
 import TiposParser.DigitParser.devolverPrimerCharQueCumple
 
 import scala.util
@@ -45,6 +44,16 @@ package object TiposParser {
       }
     }
 
+    def <>[A](parser:Parser[A]) : Parser[(T,A)] ={
+      (str: String) => this.apply(str) match{
+        case Success(x) => parser.apply(str) match{
+          case Success(y) => Success((x,y))
+          case Failure(e) => Failure(e)
+        }
+        case Failure(e) => Failure(e)
+      }
+
+    }
 
 
   }
@@ -91,11 +100,11 @@ package object TiposParser {
       }
     }
 
-    class StringParser(texto: String) extends Parser[String] {
-      def apply(stringAEncontrar: String): Try[String] = {
+    class StringParser(stringAEncontrar: String) extends Parser[String] {
+      def apply(texto: String): Try[String] = {
         texto.contains(stringAEncontrar) match {
           case true => Success(stringAEncontrar)
-          case false => Failure(new ParserException("No se contiene el string en el texto"))
+          case false => Failure(new ParserException("No se contiene el string:"+ stringAEncontrar + " en el texto"))
         }
       }
     }
