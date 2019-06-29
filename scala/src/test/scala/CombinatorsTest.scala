@@ -30,12 +30,12 @@ class CombinatorsTest extends FreeSpec with Matchers {
   }
     "<>" -{
       " al comparar el parser char(a) y char[a] con un palabra que empieze con a devuelve una tupla de a" in {
-        val concatParser=new CharParser('a') <> new CharParser('a')
-        assertParsesSucceededWithResult(concatParser.apply("alo"), Success(('a','a')))
+        val concatParser=new CharParser('a') <> new CharParser('l')
+        assertParsesSucceededWithResult(concatParser.apply("alo"), Success(('a','l')))
       }
       " al combinar el parser string(hola) y string(carita del pacman) con el texto hola amiguito :v da una tupla de (hola,:v)" in {
         val concatParser=new StringParser("hola") <> new StringParser(":v")
-        assertParsesSucceededWithResult(concatParser.apply("hola amiguito :v"), Success(("hola",":v")))
+        assertParsesSucceededWithResult(concatParser.apply("hola:v"), Success(("hola",":v")))
       }
       " al combinar el parser string(hola) y digit con el texto holam da failure por culpa del digito" in {
         val concatParser=new StringParser("hola") <> DigitParser

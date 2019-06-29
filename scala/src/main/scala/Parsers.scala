@@ -1,3 +1,4 @@
+import Musica.A
 import TiposParser.DigitParser.devolverPrimerCharQueCumple
 
 import scala.util
@@ -44,19 +45,26 @@ package object TiposParser {
       }
     }
 
-    def <>[A](parser:Parser[A]) : Parser[(T,A)] ={
-      (str: String) => this.apply(str) match{
-        case Success(x) => parser.apply(str) match{
+    def <>[A](parser:Parser[A]) : Parser[(T,A)] = (str: String) =>{
+
+      this.apply(str) match {
+        case Success(x) => parser.apply(x match {
+          case _:Unit => ""
+          case _:Char => str.substring(1)
+          case x:String => str.substring(x.length)
+        }) match {
           case Success(y) => Success((x,y))
-          case Failure(e) => Failure(e)
+          case Failure(y) => Failure(y)
         }
-        case Failure(e) => Failure(e)
+        case Failure(x) => Failure(x)
       }
 
     }
 
     def ~>[A](parser:Parser[A]) :Parser[A]={
-      ???
+      (str: String) => this.apply(str) match{
+        case Success(x) => parser.apply(x.toString)
+      }
     }
 
 
