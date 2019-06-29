@@ -55,6 +55,10 @@ package object TiposParser {
 
     }
 
+    def ~>[A](parser:Parser[A]) :Parser[A]={
+      ???
+    }
+
 
   }
 
@@ -102,7 +106,7 @@ package object TiposParser {
 
     class StringParser(stringAEncontrar: String) extends Parser[String] {
       def apply(texto: String): Try[String] = {
-        texto.contains(stringAEncontrar) match {
+        texto.startsWith(stringAEncontrar) match {
           case true => Success(stringAEncontrar)
           case false => Failure(new ParserException("No se contiene el string:"+ stringAEncontrar + " en el texto"))
         }

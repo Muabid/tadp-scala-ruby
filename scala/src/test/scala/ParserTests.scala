@@ -84,7 +84,7 @@ class ParserTest extends FreeSpec with Matchers {
     }
     "StringParser"-{
       "en un Parser de bob esponja si se parsea bob devuelve success de bob" in{
-        assertParsesSucceededWithResult(new StringParser("bob").apply("bob esponja"),Success("bob"))
+        assertParsesSucceededWithResult(new StringParser("bob").apply("esponja bob"),Success("bob"))
       }
       "en un Parser de bob el constructor si se parsea constructor devuelve success de constructor" in{
         assertParsesSucceededWithResult(new StringParser("constructor").apply("bob el constructor"),Success("constructor"))
