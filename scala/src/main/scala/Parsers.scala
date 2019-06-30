@@ -1,5 +1,4 @@
 import Musica.A
-import TiposParser.DigitParser.devolverPrimerCharQueCumple
 
 import scala.util
 import scala.util.{Failure, Success, Try}
@@ -13,24 +12,18 @@ package object TiposParser {
 
 
   trait FirstChar {
-    def devolverPrimerCharQueCumple(f: Char => Boolean, stringAChequear: String): Try[Char] = {
-      for (caracter <- stringAChequear) {
-        if (f(caracter)) {
-          return Success(caracter)
-        }
+    def headCumpleLaCondicion(f: Char => Boolean, stringAChequear: String): Try[Char] = {
+      f(stringAChequear.head) match {
+        case true => Success(stringAChequear.head)
+        case false => Failure(new ParserException("el head no cumple la condicion"))
       }
-      Failure(new ParserException("Ningun char devuelve la condicion"))
     }
-
-    def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
-
-    def esDigito(c: Char): Boolean = c.isDigit
-
-    def esLetraODigito(c: Char): Boolean = esLetra(c) || esDigito(c)
   }
 
-  trait Parser[T] extends Function[String,Try[T]] {
-    def apply(v1: String): Try[T]
+  type ParseResult[T]=Try[(T,Int)]
+  trait Parser[T] extends Function[String,ParseResult[T]] {
+
+    def apply(v1: String): ParseResult[T]
 
     def verificarVacio(string: String): Try[String] = {
       string match {
@@ -40,20 +33,16 @@ package object TiposParser {
     }
     def <|>[A](parser: Parser[A]):Parser[A] ={
       (str: String) => this.apply(str)  match {
-        case Success(x: A) => Success(x)
+        case Success(x) => Success(x)
         case Failure(_) => parser.apply(str)
       }
     }
 
-    def <>[A](parser:Parser[A]) : Parser[(T,A)] = (str: String) =>{
+    def <>(parser:Parser[T]) : Parser[(T,T)] = (str: String) =>{
 
       this.apply(str) match {
-        case Success(x) => parser.apply(x match {
-          case _:Unit => ""
-          case _:Char => str.substring(1)
-          case x:String => str.substring(x.length)
-        }) match {
-          case Success(y) => Success((x,y))
+        case Success(x) => parser.apply(str.substring(x._2)) match {
+          case Success(y) => Success(((x._1,y._1),x._2 + y._2))
           case Failure(y) => Failure(y)
         }
         case Failure(x) => Failure(x)
@@ -71,51 +60,53 @@ package object TiposParser {
   }
 
     object AnyCharParser extends Parser[Char] {
-       def apply(stringAParsear: String): Try[Char] = {
-        verificarVacio(stringAParsear).map(_.head)
+       def apply(stringAParsear: String): ParseResult[Char] = {
+        verificarVacio(stringAParsear).map(_.head).map((_,1))
       }
     }
 
     class CharParser( caracter: Char) extends Parser[Char] {
-      def apply(stringAParsear: String): Try[Char] = {
+      def apply(stringAParsear: String): ParseResult[Char] = {
         stringAParsear.indexOf(caracter) match {
-          case 0 => Success(caracter)
+          case 0 => Success(caracter).map((_,1))
           case _ =>  Failure( new ParserException("No contiene el caracter"))
         }
       }
     }
 
     object VoidParser extends  Parser[Unit] {
-      def apply(stringAParsear: String): Try[Unit] = {
+      def apply(stringAParsear: String): ParseResult[Unit] = {
         verificarVacio(stringAParsear) match {
-          case Success(_) => Success(Unit)
-          case Failure(error: ParserException) => Failure(error)
+          case Success(_) => Success(Unit).map((_,1))
+          case Failure(error) => Failure(error)
         }
       }
     }
 
-    object LetterParser extends  Parser[Char] with FirstChar {
-      def apply(stringAParsear: String): Try[Char] = {
-        devolverPrimerCharQueCumple(esLetra, stringAParsear)
-      }
+  object LetterParser extends  Parser[Char] with FirstChar {
+    def apply(stringAParsear: String): ParseResult[Char] = {
+      headCumpleLaCondicion(esLetra, stringAParsear).map((_,1))
     }
+    def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
+  }
 
-    object DigitParser extends  Parser[Char] with FirstChar {
-      def apply(stringAParsear: String): Try[Char] = {
-        devolverPrimerCharQueCumple(esDigito, stringAParsear)
-      }
+  object DigitParser extends  Parser[Char] with FirstChar {
+    def apply(stringAParsear: String): ParseResult[Char] = {
+      headCumpleLaCondicion(esDigito, stringAParsear).map((_,1))
     }
+    def esDigito(c: Char): Boolean = c.isDigit
+  }
 
-    object AlphaNumParser extends Parser[Char] with FirstChar {
-      def apply(stringAParsear: String): Try[Char] = {
-        devolverPrimerCharQueCumple(esLetraODigito, stringAParsear)
-      }
+  object AlphaNumParser extends Parser[Char] {
+    def apply(stringAParsear: String): ParseResult[Char] = {
+      (LetterParser <|> DigitParser).apply(stringAParsear)
     }
+  }
 
     class StringParser(stringAEncontrar: String) extends Parser[String] {
-      def apply(texto: String): Try[String] = {
+      def apply(texto: String): ParseResult[String] = {
         if( texto.startsWith(stringAEncontrar)){
-          Success(stringAEncontrar)
+          Success(stringAEncontrar).map((_,stringAEncontrar.length))
         } else {
           Failure(new ParserException("No se contiene el string:"+ stringAEncontrar + " en el texto"))
         }
