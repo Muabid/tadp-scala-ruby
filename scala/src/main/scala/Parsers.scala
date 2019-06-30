@@ -33,12 +33,12 @@ package object TiposParser {
     }
     def <|>[A](parser: Parser[A]):Parser[A] ={
       (str: String) => this.apply(str)  match {
-        case Success(x) => Success(x)
+        case Success(x: (A,Int)) => Success(x)
         case Failure(_) => parser.apply(str)
       }
     }
 
-    def <>(parser:Parser[T]) : Parser[(T,T)] = (str: String) =>{
+    def <>[A](parser:Parser[A]) : Parser[(T,A)] = (str: String) =>{
 
       this.apply(str) match {
         case Success(x) => parser.apply(str.substring(x._2)) match {
@@ -50,11 +50,31 @@ package object TiposParser {
 
     }
 
-    def ~>[A](parser:Parser[A]) :Parser[A]={
-      (str: String) => this.apply(str) match{
-        case Success(x) => parser.apply(x.toString)
+    def ~>[A](parser:Parser[A]) :Parser[A]= (str: String) =>{
+      this.apply(str) match {
+        case Success(x) => parser.apply(str.substring(x._2)) match {
+          case Success(y : (A,Int)) => Success(y._1,y._2 + x._2)
+          case Failure(y) => Failure(y)
+        }
+        case Failure(x) => Failure(x)
       }
     }
+    //TODO hacer que los combinator de las flechitas <DE MIERDA> NO REPITAN LOGICA
+
+    def <~[A](parser:Parser[A]) :Parser[T]= (str: String) =>{
+      this.apply(str) match {
+        case Success(x) => parser.apply(str.substring(x._2)) match {
+          case Success(y : (A,Int)) => Success(x._1,y._2 + x._2)
+          case Failure(y) => Failure(y)
+        }
+        case Failure(x) => Failure(x)
+      }
+    }
+
+    //TODO bruno hace el satisfies
+
+
+
 
 
   }
@@ -67,17 +87,17 @@ package object TiposParser {
 
     class CharParser( caracter: Char) extends Parser[Char] {
       def apply(stringAParsear: String): ParseResult[Char] = {
-        stringAParsear.indexOf(caracter) match {
+        verificarVacio(stringAParsear).flatMap((x) => stringAParsear.indexOf(caracter) match {
           case 0 => Success(caracter).map((_,1))
           case _ =>  Failure( new ParserException("No contiene el caracter"))
-        }
+        })
       }
     }
 
     object VoidParser extends  Parser[Unit] {
       def apply(stringAParsear: String): ParseResult[Unit] = {
         verificarVacio(stringAParsear) match {
-          case Success(_) => Success(Unit).map((_,1))
+          case Success(_) => Success((Unit,1))
           case Failure(error) => Failure(error)
         }
       }
@@ -85,14 +105,14 @@ package object TiposParser {
 
   object LetterParser extends  Parser[Char] with FirstChar {
     def apply(stringAParsear: String): ParseResult[Char] = {
-      headCumpleLaCondicion(esLetra, stringAParsear).map((_,1))
+      verificarVacio(stringAParsear).flatMap((str:String) => headCumpleLaCondicion(esLetra, stringAParsear).map((_,1)))
     }
     def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
   }
 
   object DigitParser extends  Parser[Char] with FirstChar {
     def apply(stringAParsear: String): ParseResult[Char] = {
-      headCumpleLaCondicion(esDigito, stringAParsear).map((_,1))
+      verificarVacio(stringAParsear).flatMap((str:String) => headCumpleLaCondicion(esDigito, stringAParsear).map((_,1)))
     }
     def esDigito(c: Char): Boolean = c.isDigit
   }

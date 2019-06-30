@@ -34,7 +34,7 @@ class ParserTest extends FreeSpec with Matchers {
     }
     "VoidParser" -{
       "al contener algo devuelve success de unit" in {
-        assertParsesSucceededWithResult(VoidParser.apply("chau"),Success(Unit,1))
+        assertParsesSucceededWithResult(VoidParser.apply("chau"),Success((),1))
       }
       "al contener algo vacio da failure" in {
         assertParseFailed(VoidParser.apply("").get)
@@ -53,8 +53,8 @@ class ParserTest extends FreeSpec with Matchers {
       "al parsear 1234 da failure" in {
         assertParseFailed(LetterParser.apply("1234").get)
       }
-      "al parsear 1234a devuelve success de a" in {
-        assertParsesSucceededWithResult(LetterParser.apply("1234a"),Success('a',1))
+      "al parsear a1234 devuelve success de a" in {
+        assertParsesSucceededWithResult(LetterParser.apply("a1234"),Success('a',1))
       }
     }
     "DigitParser"-{
@@ -62,7 +62,7 @@ class ParserTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(DigitParser.apply("1234"),Success('1',1))
       }
       "al parsear a1234 devuelve Success 1" in{
-        assertParsesSucceededWithResult(DigitParser.apply("a1234"),Success('1',1))
+        assertParsesSucceededWithResult(DigitParser.apply("1234a"),Success('1',1))
       }
       "al parsear abcd da Failure" in{
         assertParseFailed(DigitParser.apply("abcd").get)
@@ -78,16 +78,16 @@ class ParserTest extends FreeSpec with Matchers {
       "al parsear 1asss12 devuelve Success 1" in{
         assertParsesSucceededWithResult(AlphaNumParser.apply("1asss12"),Success('1',1))
       }
-      "al parsear un string vacio devuelve failure" in{
+       "al parsear un string vacio devuelve failure" in{
         assertParseFailed(AlphaNumParser.apply("").get)
       }
     }
     "StringParser"-{
       "en un Parser de bob esponja si se parsea bob devuelve success de bob" in{
-        assertParsesSucceededWithResult(new StringParser("bob").apply("esponja bob"),Success("bob",3))
+        assertParsesSucceededWithResult(new StringParser("bob").apply("bob esponja"),Success("bob",3))
       }
       "en un Parser de bob el constructor si se parsea constructor devuelve success de constructor" in{
-        assertParsesSucceededWithResult(new StringParser("constructor").apply("bob el constructor"),Success("constructor","constructor".length))
+        assertParsesSucceededWithResult(new StringParser("constructor").apply("constructor bob"),Success("constructor","constructor".length))
       }
       "en un Parser de bob esponja si se parsea calamardo devuelve failure" in{
         assertParseFailed(new StringParser("calamardo").apply("bob esponja").get)
