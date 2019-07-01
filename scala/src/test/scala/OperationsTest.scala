@@ -80,8 +80,12 @@ class OperationsTest extends FreeSpec with Matchers {
           new CharParser('(').opt <> new StringParser("parametro") <> new CharParser(')').opt
         assertParsesSucceededWithResult(optionalParser.apply("def function (parametro)"),Success((((("def function " ,'('),"parametro"),')'),24)))
       }
-
-
+    }
+    "*" - {
+      "sasa" in {
+        val kleeneParser = new CharParser('a').*
+        assertParsesSucceededWithResult(kleeneParser.apply("aaaa"),Success((List('a','a','a','a'),4)))
+      }
     }
   }
 }
