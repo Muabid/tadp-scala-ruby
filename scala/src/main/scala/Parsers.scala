@@ -1,5 +1,6 @@
 import Musica.A
 
+import scala.collection.mutable.ListBuffer
 import scala.util
 import scala.util.{Failure, Success, Try}
 //Parsers.scala:
@@ -70,25 +71,20 @@ package object TiposParser {
         case Failure(x) => Failure(x)
       }
     }
-/**
-satisfies: A partir de un parser y una condición, nos permite obtener un parser que funciona
-sólo si el parser base funciona y además el elemento parseado cumple esa condición.
 
-todo "supongo que la condicion es una funcion que recibe un string como parametro y devuelve un booleano"
- */
 
-    def satisfies(condicion: String => Boolean): Parser[T] = (str: String) =>{
+    //TODO bruno hace el satisfies
+
+    def *[A](parser: Parser[A]) : Parser[ListBuffer[A]]={(str: String) =>
+      val listaResultado : ListBuffer[A] = ListBuffer();
+      val cantidadDeCharsConsumidos : Int = 0;
       this.apply(str) match {
-        case Success(x) => if (condicion(str)) Success(x) else Failure(new ParserException("No se cumple la condicion dada"))
-        case Failure(x)=>Failure(x)
+        case Failure(_) => Success((listaResultado,cantidadDeCharsConsumidos))
+        case Success(resultado: (A,Int)) => {(resultado: (A,Int)) => Success((
+          listaResultado += resultado._1
+        ))}
       }
     }
-
-
-
-
-
-
   }
 
     object AnyCharParser extends Parser[Char] {
