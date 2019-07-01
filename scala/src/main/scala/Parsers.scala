@@ -105,7 +105,7 @@ package object TiposParser {
         case Failure(_) => Success((List(),0))
         case Success(resultado: (T,Int)) => {
           charsLeidos += resultado._2
-          Success(resultado._1 :: this.*(str.substring(charsLeidos)).get._1, charsLeidos)
+          Success(resultado._1 :: this.*(str.substring(charsLeidos)).get._1, resultado._2 + this.*(str.substring(charsLeidos)).get._2)
         }
       }
     }
