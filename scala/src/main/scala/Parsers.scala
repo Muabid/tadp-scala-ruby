@@ -1,7 +1,8 @@
 import Musica.A
 
+import scala.runtime.Nothing$
 import scala.util
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success, Try,Either}
 //Parsers.scala:
 
 // Todos reciben un string y devuelven un... estado? "Error de parseo" o "Parseo exitoso"
@@ -70,12 +71,6 @@ package object TiposParser {
         case Failure(x) => Failure(x)
       }
     }
-/**
-satisfies: A partir de un parser y una condición, nos permite obtener un parser que funciona
-sólo si el parser base funciona y además el elemento parseado cumple esa condición.
-
-todo "supongo que la condicion es una funcion que recibe un string como parametro y devuelve un booleano"
- */
 
     def satisfies(condicion: String => Boolean): Parser[T] = (str: String) =>{
       this.apply(str) match {
@@ -84,8 +79,25 @@ todo "supongo que la condicion es una funcion que recibe un string como parametr
       }
     }
 
+    /**
+    opt: convierte en opcional a un parser. Es decir, el nuevo parser siempre debería dar un resultado exitoso,
+    pero si el parser original hubiese fallado, el resultado no contendrá ningún valor y no consumirá ningún caracter del input.
+  Ejemplo:
 
+        val talVezIn = string("in").opt
+        val precedencia = talVezIn <> string("fija")
 
+    precedencia parsea exitosamente las palabras "infija" y "fija"
+    Si a precedencia le pasasemos “fija”, deberia devolver una tupla con un valor vacío y con el valor “fija”,
+    porque talVezIn no habría consumido ningún carácter del texto original.
+      */
+
+    def opt: Parser[Any] = (str: String) => {
+      this.apply(str) match {
+        case Success(x:(T,Int)) => Success(x)
+        case Failure(_) => Success(("",0))
+      }
+    }
 
 
 
