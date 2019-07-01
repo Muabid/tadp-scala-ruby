@@ -1,8 +1,8 @@
 import Musica.A
 
-import scala.collection.mutable.ListBuffer
+import scala.runtime.Nothing$
 import scala.util
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success, Try,Either}
 //Parsers.scala:
 
 // Todos reciben un string y devuelven un... estado? "Error de parseo" o "Parseo exitoso"
@@ -72,19 +72,35 @@ package object TiposParser {
       }
     }
 
-
-    //TODO bruno hace el satisfies
-
-    def *[A](parser: Parser[A]) : Parser[ListBuffer[A]]={(str: String) =>
-      val listaResultado : ListBuffer[A] = ListBuffer();
-      val cantidadDeCharsConsumidos : Int = 0;
+    def satisfies(condicion: String => Boolean): Parser[T] = (str: String) =>{
       this.apply(str) match {
-        case Failure(_) => Success((listaResultado,cantidadDeCharsConsumidos))
-        case Success(resultado: (A,Int)) => {(resultado: (A,Int)) => Success((
-          listaResultado += resultado._1
-        ))}
+        case Success(x) => if (condicion(str)) Success(x) else Failure(new ParserException("No se cumple la condicion dada"))
+        case Failure(x)=>Failure(x)
       }
     }
+
+    /**
+    opt: convierte en opcional a un parser. Es decir, el nuevo parser siempre debería dar un resultado exitoso,
+    pero si el parser original hubiese fallado, el resultado no contendrá ningún valor y no consumirá ningún caracter del input.
+  Ejemplo:
+
+        val talVezIn = string("in").opt
+        val precedencia = talVezIn <> string("fija")
+
+    precedencia parsea exitosamente las palabras "infija" y "fija"
+    Si a precedencia le pasasemos “fija”, deberia devolver una tupla con un valor vacío y con el valor “fija”,
+    porque talVezIn no habría consumido ningún carácter del texto original.
+      */
+
+    def opt: Parser[Any] = (str: String) => {
+      this.apply(str) match {
+        case Success(x:(T,Int)) => Success(x)
+        case Failure(_) => Success(("",0))
+      }
+    }
+
+
+
   }
 
     object AnyCharParser extends Parser[Char] {
