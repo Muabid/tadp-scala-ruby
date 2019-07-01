@@ -99,6 +99,17 @@ package object TiposParser {
       }
     }
 
+    def * : Parser[List[T]]=(str: String) => {
+      var listaResultado = List[T]()
+      var charsLeidos = 0
+        this.apply(str) match {
+        case Failure(_) => Success((listaResultado,charsLeidos))
+        case Success(resultado: (T,Int)) => {
+          charsLeidos += resultado._2
+          Success((listaResultado :+ this.apply(str.substring(resultado._2 + 1)).get._1, resultado._2 + 1))
+        }
+      }
+    }
 
 
   }
