@@ -82,9 +82,26 @@ class OperationsTest extends FreeSpec with Matchers {
       }
     }
     "*" - {
-      "sasa" in {
+      "kleene de un char(a) parsea los 4 chars de un string 'aaaa' y devuelve 4" in {
         val kleeneParser = new CharParser('a').*
         assertParsesSucceededWithResult(kleeneParser.apply("aaaa"),Success((List('a','a','a','a'),4)))
+      }
+      "kleene de un string('hola') parsea 2 'hola' seguidos en un string y devuelve 8 caracteres leidos" in {
+        val kleeneParser = new StringParser("hola").*
+        assertParsesSucceededWithResult(kleeneParser.apply("holahola"),Success((List("hola","hola"),8)))
+      }
+      /** DIRTY DEEDS DONE DIRTY CHEEP */
+      "kleene de alpha parser parsea bien D4C y devuleve 3 caracteres leidos" in {
+        val kleeneParser = AlphaNumParser.*
+        assertParsesSucceededWithResult(kleeneParser.apply("D4C"),Success((List('D','4','C'),3)))
+      }
+      "string parser se queda corto con el string y devuelve solo lo que pudo parsear" in {
+        val kleeneParser = new StringParser("alo").*
+        assertParsesSucceededWithResult(kleeneParser.apply("alohomora"),Success((List("alo"),3)))
+      }
+      "char parser realiza 0 parseos porque hay solo un int" in {
+        val kleeneParser = new CharParser('a').*
+        assertParsesSucceededWithResult(kleeneParser.apply("5"),Success((List(),0)))
       }
     }
   }
