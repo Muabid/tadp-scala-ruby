@@ -110,6 +110,14 @@ package object TiposParser {
       }
     }
 
+    def + : Parser[List[T]]=(str: String) => {
+      this.*.apply(str) match {
+        case Success((List(),0)) => Failure(new ParserException("No se cumple la condicion dada"))
+        case other => other
+      }
+    }
+
+
 
   }
 

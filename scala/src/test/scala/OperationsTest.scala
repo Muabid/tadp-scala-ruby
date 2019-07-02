@@ -104,5 +104,28 @@ class OperationsTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(kleeneParser.apply("5"),Success((List(),0)))
       }
     }
+
+    "+" - {
+      "clausula + rompe al aplicarse con un parser void y querer parsear ''" in {
+        val plusParser = VoidParser.+
+        assertParseFailed(plusParser.apply("").get)
+      }
+      "clausula + parsea 5 caracteres usando void parser a un string cualquiera" in {
+        val plusParser = VoidParser.+
+        assertParsesSucceededWithResult(plusParser.apply("aaffc"),Success((List((),(),(),(),()),5)))
+      }
+      "clausula + de letterParser devuelve todas las letras" in {
+        val plusParser = LetterParser.+
+        assertParsesSucceededWithResult(plusParser.apply("abc123"), Success((List('a','b','c'),3)))
+      }
+      "clausula + de anyCharParser devuelve todos los caracteres" in {
+        val plusParser = AnyCharParser.+
+        assertParsesSucceededWithResult(plusParser.apply("fff115"), Success((List('f','f','f','1','1','5'),6)))
+      }
+      "clausula + de stringParser de 'holis' devuelve holis holis holis y 15 caracteres leidos" in {
+        val plusParser = new StringParser("holis").+
+        assertParsesSucceededWithResult(plusParser.apply("holisholisholistarolis"), Success((List("holis","holis","holis"),15)))
+      }
+    }
   }
 }
