@@ -127,5 +127,24 @@ class OperationsTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(plusParser.apply("holisholisholistarolis"), Success((List("holis","holis","holis"),15)))
       }
     }
+    "const" - {
+      "const de un numero devuelve un int" in {
+        val constParser = new StringParser("123").const(true)
+        assertParsesSucceededWithResult(constParser.apply("123fff"), Success(true,3))
+      }
+      "const falla y devuelve una excepcion de forma correscta" in {
+        val constParser = DigitParser.const('f')
+        assertParseFailed(constParser.apply("fafa").get)
+      }
+      "const parsera realiza un parseo exitoso y devuelve un Unit" in {
+        val constParser = AlphaNumParser.const(Unit)
+        assertParsesSucceededWithResult(constParser.apply("f5f5"),Success(Unit,1))
+      }
+      "const de kleene parsea bien y devuelve un nuemro" in {
+        val constParser = DigitParser.+.const(7)
+        assertParsesSucceededWithResult(constParser.apply("45435848"),Success(7,8))
+      }
+    }
+
   }
 }
