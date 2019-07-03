@@ -100,17 +100,23 @@ package object TiposParser {
     }
 
     def * : Parser[List[T]]=(str: String) => {
-      var charsLeidos = 0
-        this.apply(str) match {
+      this.apply(str) match {
         case Failure(_) => Success((List(),0))
         case Success(resultado: (T,Int)) => {
-          charsLeidos += resultado._2
-          Success(resultado._1 :: this.*(str.substring(charsLeidos)).get._1, resultado._2 + this.*(str.substring(charsLeidos)).get._2)
+          Success(resultado._1 :: this.*(str.substring(resultado._2)).get._1, resultado._2 + this.*(str.substring(resultado._2)).get._2)
         }
       }
     }
 
-
+    def + : Parser[List[T]]=(str: String) => {
+      this.*.apply(str) match {
+        case Success((List(),0)) => Failure(new ParserException("No se cumple la condicion dada"))
+        case other => other
+      }
+    }
+    def const(valor: Any) : Parser[Any] = (str: String) => {
+      this.apply(str).map(resultado => (valor, resultado._2))
+    }
   }
 
     object AnyCharParser extends Parser[Char] {
@@ -121,7 +127,7 @@ package object TiposParser {
 
     class CharParser( caracter: Char) extends Parser[Char] {
       def apply(stringAParsear: String): ParseResult[Char] = {
-        verificarVacio(stringAParsear).flatMap((x) => stringAParsear.indexOf(caracter) match {
+        verificarVacio(stringAParsear).flatMap(_ => stringAParsear.indexOf(caracter) match {
           case 0 => Success(caracter).map((_,1))
           case _ =>  Failure( new ParserException("No contiene el caracter"))
         })

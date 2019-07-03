@@ -82,10 +82,69 @@ class OperationsTest extends FreeSpec with Matchers {
       }
     }
     "*" - {
-      "sasa" in {
+      "kleene de un char(a) parsea los 4 chars de un string 'aaaa' y devuelve 4" in {
         val kleeneParser = new CharParser('a').*
         assertParsesSucceededWithResult(kleeneParser.apply("aaaa"),Success((List('a','a','a','a'),4)))
       }
+      "kleene de un string('hola') parsea 2 'hola' seguidos en un string y devuelve 8 caracteres leidos" in {
+        val kleeneParser = new StringParser("hola").*
+        assertParsesSucceededWithResult(kleeneParser.apply("holahola"),Success((List("hola","hola"),8)))
+      }
+      /** DIRTY DEEDS DONE DIRTY CHEEP */
+      "kleene de alpha parser parsea bien D4C y devuleve 3 caracteres leidos" in {
+        val kleeneParser = AlphaNumParser.*
+        assertParsesSucceededWithResult(kleeneParser.apply("D4C"),Success((List('D','4','C'),3)))
+      }
+      "string parser se queda corto con el string y devuelve solo lo que pudo parsear" in {
+        val kleeneParser = new StringParser("alo").*
+        assertParsesSucceededWithResult(kleeneParser.apply("alohomora"),Success((List("alo"),3)))
+      }
+      "char parser realiza 0 parseos porque hay solo un int" in {
+        val kleeneParser = new CharParser('a').*
+        assertParsesSucceededWithResult(kleeneParser.apply("5"),Success((List(),0)))
+      }
     }
+
+    "+" - {
+      "clausula + rompe al aplicarse con un parser void y querer parsear ''" in {
+        val plusParser = VoidParser.+
+        assertParseFailed(plusParser.apply("").get)
+      }
+      "clausula + parsea 5 caracteres usando void parser a un string cualquiera" in {
+        val plusParser = VoidParser.+
+        assertParsesSucceededWithResult(plusParser.apply("aaffc"),Success((List((),(),(),(),()),5)))
+      }
+      "clausula + de letterParser devuelve todas las letras" in {
+        val plusParser = LetterParser.+
+        assertParsesSucceededWithResult(plusParser.apply("abc123"), Success((List('a','b','c'),3)))
+      }
+      "clausula + de anyCharParser devuelve todos los caracteres" in {
+        val plusParser = AnyCharParser.+
+        assertParsesSucceededWithResult(plusParser.apply("fff115"), Success((List('f','f','f','1','1','5'),6)))
+      }
+      "clausula + de stringParser de 'holis' devuelve holis holis holis y 15 caracteres leidos" in {
+        val plusParser = new StringParser("holis").+
+        assertParsesSucceededWithResult(plusParser.apply("holisholisholistarolis"), Success((List("holis","holis","holis"),15)))
+      }
+    }
+    "const" - {
+      "const de un numero devuelve un int" in {
+        val constParser = new StringParser("123").const(true)
+        assertParsesSucceededWithResult(constParser.apply("123fff"), Success(true,3))
+      }
+      "const falla y devuelve una excepcion de forma correscta" in {
+        val constParser = DigitParser.const('f')
+        assertParseFailed(constParser.apply("fafa").get)
+      }
+      "const parsera realiza un parseo exitoso y devuelve un Unit" in {
+        val constParser = AlphaNumParser.const(Unit)
+        assertParsesSucceededWithResult(constParser.apply("f5f5"),Success(Unit,1))
+      }
+      "const de kleene parsea bien y devuelve un nuemro" in {
+        val constParser = DigitParser.+.const(7)
+        assertParsesSucceededWithResult(constParser.apply("45435848"),Success(7,8))
+      }
+    }
+
   }
 }
