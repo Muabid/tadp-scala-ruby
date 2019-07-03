@@ -151,13 +151,12 @@ class OperationsTest extends FreeSpec with Matchers {
         val mapParser = DigitParser.map(x => x.asDigit + 1)
         assertParsesSucceededWithResult(mapParser.apply("2"), Success(3, 1))
       }
-      /* "test de ejemplo en enunciado" in {
+      "test de ejemplo en enunciado" in {
           case class Persona(nombre: String, apellido: String)
           val personaParser = (AlphaNumParser.* <> (new CharParser(' ') ~> AlphaNumParser.*))
             .map { case (nombre, apellido) => Persona(nombre.mkString, apellido.mkString) }
-          assertParsesSucceededWithResult(personaParser.apply("Nicolas Lopez"),Success(Persona("Nicolas","Lopez"),12))
+          assertParsesSucceededWithResult(personaParser.apply("Nicolas Lopez"),Success(Persona("Nicolas","Lopez"),13))
         }
-      } */
+      }
     }
-  }
 }

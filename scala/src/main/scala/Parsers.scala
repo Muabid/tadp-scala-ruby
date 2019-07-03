@@ -153,7 +153,7 @@ package object TiposParser {
     def apply(stringAParsear: String): ParseResult[Char] = {
       verificarVacio(stringAParsear).flatMap((str:String) => headCumpleLaCondicion(esLetra, stringAParsear).map((_,1)))
     }
-    def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
+    def esLetra(c: Char): Boolean = ('a' to 'z') union ('A' to 'Z') contains c
   }
 
   object DigitParser extends  Parser[Char] with FirstChar {
