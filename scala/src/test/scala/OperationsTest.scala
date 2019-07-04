@@ -1,4 +1,4 @@
-import TiposParser._
+import TiposParser.{LetterParser, _}
 import org.scalatest.{FreeSpec, Matchers}
 
 import scala.util.Success
@@ -127,10 +127,47 @@ class OperationsTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(plusParser.apply("holisholisholistarolis"), Success((List("holis","holis","holis"),15)))
       }
     }
+    "sepBy" -{
+      "al hacer apply de 1-2-3-4-5-6 a un sepByParser de digir pasado char(-) da success" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParsesSucceededWithResult(sepByParser.apply("1-2-3-4-5-6"), Success((List('1','2','3','4','5','6'),11)))
+      }
+      "al hacer apply de 1-2-3-4-5- a un sepByParser de digir pasado char(-) da failure ya que el ultimo no se puede parsear" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParseFailed(sepByParser.apply("1-2-3-4-5-").get)
+      }
+      "al hacer apply de -1-2-3-4-5-6 a un sepByParser de digir pasado char(-) da failure ya que el primero no se puede parsear con el primer parser" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParseFailed(sepByParser.apply("-1-2-3-4-5-6").get)
+      }
+      "al hacer apply de 1-22-3-4-5-6 a un sepByParser de digir pasado char(-) da failure ya que despues del 2 hay otro 2 y no se puede parsear con el segundo parser" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParseFailed(sepByParser.apply("1-22-3-4-5-6").get)
+      }
+      "al hacer apply de Naruto es un Ninja Sasuke es un Ninja bokita" in {
+        val sepByParser =  (new StringParser("Naruto") <|>
+          new StringParser("Sasuke") <|>
+          new StringParser("bokita"))
+            .sepBy(new StringParser(" es un Ninja "))
+        assertParsesSucceededWithResult(sepByParser.apply("Naruto es un Ninja Sasuke es un Ninja bokita"),
+          Success((List("Naruto","Sasuke","bokita"),44)))
+      }
+
+      "fede y las venezolanas" in {
+        val sepByParser =
+          (new StringParser("/fede:") <|> new StringParser("/venezolana:"))
+          .sepBy(((AlphaNumParser.*) <|> new CharParser(' ')))
+        assertParsesSucceededWithResult(sepByParser.apply("/fede: sadasddad sdsdsad /venezolana: sdadsdds /fede:"),
+          Success((List("Naruto","Sasuke","bokita"),44)))
+      }
+
+
+    }
+
     "const" - {
       "const de un numero devuelve un int" in {
         val constParser = new StringParser("123").const(true)
-        assertParsesSucceededWithResult(constParser.apply("123fff"), Success(true,3))
+        assertParsesSucceededWithResult(constParser.apply("123fff"), Success((true,3)))
       }
       "const falla y devuelve una excepcion de forma correscta" in {
         val constParser = DigitParser.const('f')

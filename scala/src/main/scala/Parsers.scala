@@ -79,19 +79,6 @@ package object TiposParser {
       }
     }
 
-    /**
-    opt: convierte en opcional a un parser. Es decir, el nuevo parser siempre debería dar un resultado exitoso,
-    pero si el parser original hubiese fallado, el resultado no contendrá ningún valor y no consumirá ningún caracter del input.
-  Ejemplo:
-
-        val talVezIn = string("in").opt
-        val precedencia = talVezIn <> string("fija")
-
-    precedencia parsea exitosamente las palabras "infija" y "fija"
-    Si a precedencia le pasasemos “fija”, deberia devolver una tupla con un valor vacío y con el valor “fija”,
-    porque talVezIn no habría consumido ningún carácter del texto original.
-      */
-
     def opt: Parser[Any] = (str: String) => {
       this.apply(str) match {
         case Success(x:(T,Int)) => Success(x)
@@ -114,6 +101,23 @@ package object TiposParser {
         case other => other
       }
     }
+    //   digit.sepBy(new CharParser('-'))  1-2-3-4-5-6 => devuelve Success((List(1,2,3,4,5),6))
+
+    def sepBy[A](nuevoParser: Parser[A]) : Parser[List[T]] = (str:String)=> {
+      (this <~ nuevoParser).+.apply(str) match {
+
+        case Success(tuplaKleene) => {
+          this.apply(str.substring(tuplaKleene._2)) match {
+            case Success(tuplaFinal) => if (tuplaFinal._2 + tuplaKleene._2 == str.length) Success(( tuplaKleene._1 :+ tuplaFinal._1  , tuplaFinal._2 + tuplaKleene._2)) else Failure(new ParserException("El string no estaba bien separado"))
+            case Failure(_) => Failure(new ParserException("el ultimo grupo del string no se puede parsear"))
+          }
+        }
+        case other => other
+      }
+    }
+
+
+
     def const(valor: Any) : Parser[Any] = (str: String) => {
       this.apply(str).map(resultado => (valor, resultado._2))
     }
