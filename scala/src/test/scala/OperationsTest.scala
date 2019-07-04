@@ -181,6 +181,10 @@ class OperationsTest extends FreeSpec with Matchers {
         val constParser = DigitParser.+.const(7)
         assertParsesSucceededWithResult(constParser.apply("45435848"),Success(7,8))
       }
+      "const parser " in {
+        val constParser = (DigitParser <|> AnyCharParser).*.const("si no aprobamos me suicido")
+        assertParsesSucceededWithResult(constParser.apply("holis5895chauchis"),Success(("si no aprobamos me suicido",17)))
+      }
     }
 
     "map" - {
@@ -193,7 +197,19 @@ class OperationsTest extends FreeSpec with Matchers {
           val personaParser = (AlphaNumParser.* <> (new CharParser(' ') ~> AlphaNumParser.*))
             .map { case (nombre, apellido) => Persona(nombre.mkString, apellido.mkString) }
           assertParsesSucceededWithResult(personaParser.apply("Nicolas Lopez"),Success(Persona("Nicolas","Lopez"),13))
-        }
+      }
+      "parser map si falla, devuelve una falla de parser" in {
+        val mapParser = AnyCharParser.map(x => x * 2)
+        assertParseFailed(mapParser.apply("").get)
+      }
+      "parser map concatena char devuelto del parser con otro" in {
+        val mapParser = new StringParser("hola").map(x => x + " tarola")
+        assertParsesSucceededWithResult(mapParser.apply("hola"), Success("hola tarola", 4))
+      }
+      "parser map parsea existosamente un string y devuelve el resultado de sumar su longitud por 5" in {
+        val mapParser = new StringParser("bokita").map(x => x.length + 5)
+        assertParsesSucceededWithResult(mapParser.apply("bokita es pueblo"), Success(11, 6))
       }
     }
+  }
 }
