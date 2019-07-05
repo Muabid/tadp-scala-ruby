@@ -14,9 +14,10 @@ package object TiposParser {
 
   trait FirstChar {
     def headCumpleLaCondicion(f: Char => Boolean, stringAChequear: String): Try[Char] = {
-      f(stringAChequear.head) match {
-        case true => Success(stringAChequear.head)
-        case false => Failure(new ParserException("el head no cumple la condicion"))
+      if (f(stringAChequear.head)) {
+        Success(stringAChequear.head)
+      } else {
+        Failure(new ParserException("el head no cumple la condicion"))
       }
     }
   }
@@ -33,7 +34,7 @@ package object TiposParser {
       }
     }
     def <|>[A](parser: Parser[A]):Parser[A] ={
-      (str: String) => this.apply(str)  match {
+      str: String => this.apply(str)  match {
         case Success(x: (A,Int)) => Success(x)
         case Failure(_) => parser.apply(str)
       }
@@ -50,7 +51,7 @@ package object TiposParser {
       }
 
     }
-
+    
     def ~>[A](parser:Parser[A]) :Parser[A]= (str: String) =>{
       this.apply(str) match {
         case Success(x) => parser.apply(str.substring(x._2)) match {
@@ -79,19 +80,6 @@ package object TiposParser {
       }
     }
 
-    /**
-    opt: convierte en opcional a un parser. Es decir, el nuevo parser siempre debería dar un resultado exitoso,
-    pero si el parser original hubiese fallado, el resultado no contendrá ningún valor y no consumirá ningún caracter del input.
-  Ejemplo:
-
-        val talVezIn = string("in").opt
-        val precedencia = talVezIn <> string("fija")
-
-    precedencia parsea exitosamente las palabras "infija" y "fija"
-    Si a precedencia le pasasemos “fija”, deberia devolver una tupla con un valor vacío y con el valor “fija”,
-    porque talVezIn no habría consumido ningún carácter del texto original.
-      */
-
     def opt: Parser[Any] = (str: String) => {
       this.apply(str) match {
         case Success(x:(T,Int)) => Success(x)
@@ -102,9 +90,8 @@ package object TiposParser {
     def * : Parser[List[T]]=(str: String) => {
       this.apply(str) match {
         case Failure(_) => Success((List(),0))
-        case Success(resultado: (T,Int)) => {
+        case Success(resultado: (T,Int)) =>
           Success(resultado._1 :: this.*(str.substring(resultado._2)).get._1, resultado._2 + this.*(str.substring(resultado._2)).get._2)
-        }
       }
     }
 
@@ -114,9 +101,32 @@ package object TiposParser {
         case other => other
       }
     }
+    //   digit.sepBy(new CharParser('-'))  1-2-3-4-5-6 => devuelve Success((List(1,2,3,4,5),6))
+
+    def sepBy[A](nuevoParser: Parser[A]) : Parser[List[T]] = (str:String)=> {
+      (this <~ nuevoParser).+.apply(str) match {
+
+        case Success(tuplaKleene) => {
+          this.apply(str.substring(tuplaKleene._2)) match {
+            case Success(tuplaFinal) => if (tuplaFinal._2 + tuplaKleene._2 == str.length) Success(( tuplaKleene._1 :+ tuplaFinal._1  , tuplaFinal._2 + tuplaKleene._2)) else Failure(new ParserException("El string no estaba bien separado"))
+            case Failure(_) => Failure(new ParserException("el ultimo grupo del string no se puede parsear"))
+          }
+        }
+        case other => other
+      }
+    }
+
+
+
     def const(valor: Any) : Parser[Any] = (str: String) => {
       this.apply(str).map(resultado => (valor, resultado._2))
     }
+
+    def map[A](f: T => A) : Parser[A] = (str:String) => {
+      this.apply(str).map(resultado => (f(resultado._1),resultado._2))
+    }
+
+
   }
 
     object AnyCharParser extends Parser[Char] {
@@ -145,14 +155,14 @@ package object TiposParser {
 
   object LetterParser extends  Parser[Char] with FirstChar {
     def apply(stringAParsear: String): ParseResult[Char] = {
-      verificarVacio(stringAParsear).flatMap((str:String) => headCumpleLaCondicion(esLetra, stringAParsear).map((_,1)))
+      verificarVacio(stringAParsear).flatMap((_:String) => headCumpleLaCondicion(esLetra, stringAParsear).map((_,1)))
     }
-    def esLetra(c: Char): Boolean = c.toString.matches("""[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+""")
+    def esLetra(c: Char): Boolean = ('a' to 'z') union ('A' to 'Z') contains c
   }
 
   object DigitParser extends  Parser[Char] with FirstChar {
     def apply(stringAParsear: String): ParseResult[Char] = {
-      verificarVacio(stringAParsear).flatMap((str:String) => headCumpleLaCondicion(esDigito, stringAParsear).map((_,1)))
+      verificarVacio(stringAParsear).flatMap((_:String) => headCumpleLaCondicion(esDigito, stringAParsear).map((_,1)))
     }
     def esDigito(c: Char): Boolean = c.isDigit
   }

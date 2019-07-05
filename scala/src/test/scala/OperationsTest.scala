@@ -1,4 +1,4 @@
-import TiposParser._
+import TiposParser.{LetterParser, _}
 import org.scalatest.{FreeSpec, Matchers}
 
 import scala.util.Success
@@ -127,10 +127,47 @@ class OperationsTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(plusParser.apply("holisholisholistarolis"), Success((List("holis","holis","holis"),15)))
       }
     }
+    "sepBy" -{
+      "al hacer apply de 1-2-3-4-5-6 a un sepByParser de digir pasado char(-) da success" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParsesSucceededWithResult(sepByParser.apply("1-2-3-4-5-6"), Success((List('1','2','3','4','5','6'),11)))
+      }
+      "al hacer apply de 1-2-3-4-5- a un sepByParser de digir pasado char(-) da failure ya que el ultimo no se puede parsear" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParseFailed(sepByParser.apply("1-2-3-4-5-").get)
+      }
+      "al hacer apply de -1-2-3-4-5-6 a un sepByParser de digir pasado char(-) da failure ya que el primero no se puede parsear con el primer parser" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParseFailed(sepByParser.apply("-1-2-3-4-5-6").get)
+      }
+      "al hacer apply de 1-22-3-4-5-6 a un sepByParser de digir pasado char(-) da failure ya que despues del 2 hay otro 2 y no se puede parsear con el segundo parser" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParseFailed(sepByParser.apply("1-22-3-4-5-6").get)
+      }
+      "al hacer apply de Naruto es un Ninja Sasuke es un Ninja bokita" in {
+        val sepByParser =  (new StringParser("Naruto") <|>
+          new StringParser("Sasuke") <|>
+          new StringParser("bokita"))
+            .sepBy(new StringParser(" es un Ninja "))
+        assertParsesSucceededWithResult(sepByParser.apply("Naruto es un Ninja Sasuke es un Ninja bokita"),
+          Success((List("Naruto","Sasuke","bokita"),44)))
+      }
+
+      "fede y las venezolanas" in {
+        val sepByParser =
+          (new StringParser("/fede:") <|> new StringParser("/venezolana:"))
+          .sepBy(((AlphaNumParser.*) <|> new CharParser(' ')))
+        assertParsesSucceededWithResult(sepByParser.apply("/fede: sadasddad sdsdsad /venezolana: sdadsdds /fede:"),
+          Success((List("Naruto","Sasuke","bokita"),44)))
+      }
+
+
+    }
+
     "const" - {
       "const de un numero devuelve un int" in {
         val constParser = new StringParser("123").const(true)
-        assertParsesSucceededWithResult(constParser.apply("123fff"), Success(true,3))
+        assertParsesSucceededWithResult(constParser.apply("123fff"), Success((true,3)))
       }
       "const falla y devuelve una excepcion de forma correscta" in {
         val constParser = DigitParser.const('f')
@@ -144,7 +181,35 @@ class OperationsTest extends FreeSpec with Matchers {
         val constParser = DigitParser.+.const(7)
         assertParsesSucceededWithResult(constParser.apply("45435848"),Success(7,8))
       }
+      "const parser " in {
+        val constParser = (DigitParser <|> AnyCharParser).*.const("si no aprobamos me suicido")
+        assertParsesSucceededWithResult(constParser.apply("holis5895chauchis"),Success(("si no aprobamos me suicido",17)))
+      }
     }
 
+    "map" - {
+      "parser map devuelve un valor de int sumado por el map" in {
+        val mapParser = DigitParser.map(x => x.asDigit + 1)
+        assertParsesSucceededWithResult(mapParser.apply("2"), Success(3, 1))
+      }
+      "test de ejemplo en enunciado" in {
+          case class Persona(nombre: String, apellido: String)
+          val personaParser = (AlphaNumParser.* <> (new CharParser(' ') ~> AlphaNumParser.*))
+            .map { case (nombre, apellido) => Persona(nombre.mkString, apellido.mkString) }
+          assertParsesSucceededWithResult(personaParser.apply("Nicolas Lopez"),Success(Persona("Nicolas","Lopez"),13))
+      }
+      "parser map si falla, devuelve una falla de parser" in {
+        val mapParser = AnyCharParser.map(x => x * 2)
+        assertParseFailed(mapParser.apply("").get)
+      }
+      "parser map concatena char devuelto del parser con otro" in {
+        val mapParser = new StringParser("hola").map(x => x + " tarola")
+        assertParsesSucceededWithResult(mapParser.apply("hola"), Success("hola tarola", 4))
+      }
+      "parser map parsea existosamente un string y devuelve el resultado de sumar su longitud por 5" in {
+        val mapParser = new StringParser("bokita").map(x => x.length + 5)
+        assertParsesSucceededWithResult(mapParser.apply("bokita es pueblo"), Success(11, 6))
+      }
+    }
   }
 }
