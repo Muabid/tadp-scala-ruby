@@ -142,7 +142,7 @@ class OperationsTest extends FreeSpec with Matchers {
       }
       "al hacer apply de 1-22-3-4-5-6 a un sepByParser de digir pasado char(-) da failure ya que despues del 2 hay otro 2 y no se puede parsear con el segundo parser" in {
         val sepByParser =  DigitParser.sepBy(new CharParser('-'))
-        assertParseFailed(sepByParser.apply("1-22-3-4-5-6").get)
+        assertParsesSucceededWithResult(sepByParser.apply("1-22-3-4-5-6"),Success((List('1','2'),3)))
       }
       "al hacer apply de Naruto es un Ninja Sasuke es un Ninja bokita" in {
         val sepByParser =  (new StringParser("Naruto") <|>

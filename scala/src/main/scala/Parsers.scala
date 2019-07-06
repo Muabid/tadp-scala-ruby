@@ -101,14 +101,14 @@ package object TiposParser {
         case other => other
       }
     }
-    //   digit.sepBy(new CharParser('-'))  1-2-3-4-5-6 => devuelve Success((List(1,2,3,4,5),6))
+    //   digit.sepBy(new CharParser('-'))  1-2-3-4-5-6dasdasdasd => devuelve Success((List(1,2,3,4,5),6))
 
     def sepBy[A](nuevoParser: Parser[A]) : Parser[List[T]] = (str:String)=> {
       (this <~ nuevoParser).+.apply(str) match {
 
         case Success(tuplaKleene) => {
           this.apply(str.substring(tuplaKleene._2)) match {
-            case Success(tuplaFinal) => if (tuplaFinal._2 + tuplaKleene._2 == str.length) Success(( tuplaKleene._1 :+ tuplaFinal._1  , tuplaFinal._2 + tuplaKleene._2)) else Failure(new ParserException("El string no estaba bien separado"))
+            case Success(tuplaFinal) => Success(( tuplaKleene._1 :+ tuplaFinal._1  , tuplaFinal._2 + tuplaKleene._2))
             case Failure(_) => Failure(new ParserException("el ultimo grupo del string no se puede parsear"))
           }
         }

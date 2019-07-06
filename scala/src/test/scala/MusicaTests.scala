@@ -15,7 +15,7 @@ class MusicaTests extends FreeSpec with Matchers {
   }
 
   "Reproductor" - {
-    "Parser de musica" - {
+    "NotaParser" - {
       "el string A se parsea y devuelve success de a" in {
         assertParsesSucceededWithResult(NotaParser.apply("A"), Success(A,1))
         assertParsesSucceededWithResult(NotaParser.apply("B"), Success(B,1))
@@ -28,7 +28,8 @@ class MusicaTests extends FreeSpec with Matchers {
       "el string notab se parsea y devuelve success de nota bemol" in {
         assertParsesSucceededWithResult(NotaParser.apply("Ab"), Success(A.bemol,2))
         assertParsesSucceededWithResult(NotaParser.apply("Bb"), Success(B.bemol,2))
-    //  assertParsesSucceededWithResult(NotaParser.apply("Cb"), Success(C.bemol,2))
+        assertParsesSucceededWithResult(NotaParser.apply("Cb"),Success((C,1)))
+        assertThrows[IndexOutOfBoundsException] (C.bemol) // Que paso que no hay Cbemol?
         assertParsesSucceededWithResult(NotaParser.apply("Db"), Success(D.bemol,2))
         assertParsesSucceededWithResult(NotaParser.apply("Eb"), Success(E.bemol,2))
         assertParsesSucceededWithResult(NotaParser.apply("Fb"), Success(F.bemol,2))
@@ -43,6 +44,93 @@ class MusicaTests extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(NotaParser.apply("F#"), Success(F.sostenido,2))
         assertParsesSucceededWithResult(NotaParser.apply("G#"), Success(G.sostenido,2))
       }
+    }
+    "SilencioParser" - {
+      "al parsear _ da success de blanca" in{
+        assertParsesSucceededWithResult(SilencioParser.apply("_"), Success(Silencio(Blanca),1))
+      }
+      "al parsear - da success de negra" in{
+        assertParsesSucceededWithResult(SilencioParser.apply("-"), Success(Silencio(Negra),1))
+      }
+      "al parsear ~ da success de blanca" in{
+        assertParsesSucceededWithResult(SilencioParser.apply("~"), Success(Silencio(Corchea),1))
+      }
+    }
+    "TonoParser"-{
+      "al parsear 8A da success" in{
+        assertParsesSucceededWithResult(TonoParser.apply("8A"), Success(Tono(8,A),2))
+      }
+      "al parsear 9A# da success" in{
+        assertParsesSucceededWithResult(TonoParser.apply("9A#"), Success(Tono(9,A.sostenido),3))
+      }
+      "al parsear 9Eb da success" in{
+        assertParsesSucceededWithResult(TonoParser.apply("9Eb"), Success(Tono(9,E.bemol),3))
+      }
   }
+    "FiguraParser" -{
+      "al parsear 1/1 da success" in{
+        assertParsesSucceededWithResult(FiguraParser.apply("1/1"), Success(Redonda,3))
+      }
+      "al parsear 1/2 da success" in{
+        assertParsesSucceededWithResult(FiguraParser.apply("1/2"), Success(Blanca,3))
+      }
+      "al parsear 1/4 da success" in{
+        assertParsesSucceededWithResult(FiguraParser.apply("1/4"), Success(Negra,3))
+      }
+      "al parsear 1/8 da success" in{
+        assertParsesSucceededWithResult(FiguraParser.apply("1/8"), Success(Corchea,3))
+      }
+      "al parsear 1/16 da success" in{
+        assertParsesSucceededWithResult(FiguraParser.apply("1/16"), Success(SemiCorchea,4))
+      }
+    }
+    "SonidoParser"-{
+      "al parsear 5C#1/8 da success" in{
+        assertParsesSucceededWithResult(SonidoParser.apply("5C#1/8"), Success(Sonido(Tono(5,C.sostenido),Corchea),6))
+      }
+      "al parsear 5C1/8 da success" in{
+        assertParsesSucceededWithResult(SonidoParser.apply("5C1/8"), Success(Sonido(Tono(5,C),Corchea),5))
+      }
+      "al parsear 5D#1/2 da success" in{
+        assertParsesSucceededWithResult(SonidoParser.apply("5D#1/2"), Success(Sonido(Tono(5,D.sostenido),Blanca),6))
+      }
+      "al parsear 1Bb1/16 da success" in{
+        assertParsesSucceededWithResult(SonidoParser.apply("1Bb1/16"), Success(Sonido(Tono(1,B.bemol),SemiCorchea),7))
+      }
+      "al parsear 11Bb1/16 da failure " in{
+        assertParseFailed(SonidoParser.apply("11Bb1/16").get)
+      }
+      "al parsear 1BbB1/16 da failure " in{
+        assertParseFailed(SonidoParser.apply("1BbB1/16").get)
+      }
+      "al parsear 1Bb1/3 da failure " in{
+        assertParseFailed(SonidoParser.apply("1Bb1/3").get)
+      }
+      "al parsear 1Ba1/3 da failure " in{
+        assertParseFailed(SonidoParser.apply("1Ba1/3").get)
+      }
+      "al parsear 1Bb2/3 da failure " in{
+        assertParseFailed(SonidoParser.apply("1Bb2/3").get)
+      }
+    }
+    "AcordeParser" - {
+      "al parsear 6A+6C#+6G1/8 da success" in{
+        assertParsesSucceededWithResult(AcordeParser.apply("6A+6C#+6G1/8"), Success(Acorde(List(Tono(6,A),Tono(6,C.sostenido),Tono(6,G)),Corchea),12))
+      }
+      "al parsear 6G1/8 rompe por no ser un acorde" in{
+        assertParseFailed(AcordeParser.apply("66G1/8").get)
+      }
+      "al parsear 6Cb+6Eb1/16 rompe por no ser un acorde" in{
+        assertParsesSucceededWithResult(AcordeParser.apply("6C+6Eb1/16"), Success(Acorde(List(Tono(6,C),Tono(6,E.bemol)),SemiCorchea),10))
+      }
+      "al parsear 4AM1/8 da success" in {
+        assertParsesSucceededWithResult(AcordeParser.apply("4AM1/8"), Success(Acorde(List(Tono(4,A), Tono(4,Cs), Tono(4,E)),Corchea),6))
+      }
+      "al parsear 4Am1/8 da success" in {
+        assertParsesSucceededWithResult(AcordeParser.apply("4Am1/8"), Success(Acorde(List(Tono(4,A), Tono(4,C), Tono(4,E)),Corchea),6))
+      }
+
+    }
+
 }
 }

@@ -55,7 +55,7 @@ package object PlayAudio extends App {
     val figuraCorcheaParser : Parser[Figura]= new StringParser("1/8").const(Corchea)
     val figuraSemiCorcheaParser : Parser[Figura]= new StringParser("1/16").const(SemiCorchea)
     def apply(str: String): ParseResult[Figura] = {
-      (figuraRedondaParser <|> figuraBlancaParser <|> figuraNegraParser <|> figuraCorcheaParser <|> figuraSemiCorcheaParser)(str)
+      (figuraSemiCorcheaParser <|> figuraBlancaParser <|> figuraNegraParser <|> figuraCorcheaParser <|> figuraRedondaParser)(str)
     }
   }
 
