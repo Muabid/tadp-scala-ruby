@@ -61,7 +61,6 @@ package object TiposParser {
         case Failure(x) => Failure(x)
       }
     }
-    //TODO hacer que los combinator de las flechitas <DE MIERDA> NO REPITAN LOGICA
 
     def <~[A](parser:Parser[A]) :Parser[T]= (str: String) =>{
       this.apply(str) match {
@@ -101,7 +100,6 @@ package object TiposParser {
         case other => other
       }
     }
-    //   digit.sepBy(new CharParser('-'))  1-2-3-4-5-6dasdasdasd => devuelve Success((List(1,2,3,4,5),6))
 
     def sepBy[A](nuevoParser: Parser[A]) : Parser[List[T]] = (str:String)=> {
       (this <~ nuevoParser).+.apply(str) match {
