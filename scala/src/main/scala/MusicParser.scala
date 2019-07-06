@@ -5,7 +5,7 @@ import scala.collection.mutable.ListBuffer
 case class Note(name: String)
 
 class MusicParser(input: String) {
-  protected val inputStream = new PushbackReader(new StringReader(parsePattern(input)))
+  protected val inputStream = new PushbackReader(new StringReader(input))
 
   protected def parseChar(): Char = {
     val parsed = inputStream.read()
@@ -13,27 +13,10 @@ class MusicParser(input: String) {
     return parsed.toChar
   }
 
-  protected def parsePattern(inputOriginal: String): String ={
-    if(inputOriginal.exists(_.isDigit)){
-      var inputTransformado:String=""
-      val inputAntesDeAlgunDigito:String = PatternUtils.untilFirstPattern(inputOriginal)
-      val vecesARepetir: Int =inputOriginal.charAt(inputAntesDeAlgunDigito.length()).asDigit
-      val loDeAdentroDelParentesis:String = PatternUtils.insidePattern(inputOriginal.substring(inputAntesDeAlgunDigito.length()+3))
-      val loDeLaDerechaDelParentesis:String = inputOriginal.substring(inputAntesDeAlgunDigito.length()+loDeAdentroDelParentesis.length()+5)
-
-      inputTransformado=parsePattern(inputAntesDeAlgunDigito + (loDeAdentroDelParentesis+' ') * vecesARepetir + loDeLaDerechaDelParentesis)
-
-      return inputTransformado
-    }
-    else{
-      return inputOriginal
-    }
-  }
-
   protected def parseNote(): Nota = {
     var next: Char = ' '
     do next = parseChar() while (next == ' ')
-      Nota.notas.find(_.toString == next.toString()).getOrElse(throw new NotANoteException(next))
+    Nota.notas.find(_.toString == next.toString()).getOrElse(throw new NotANoteException(next))
   }
 
   def parse(): List[Nota] = {
