@@ -118,7 +118,7 @@ package object TiposParser {
 
 
 
-    def const(valor: Any) : Parser[Any] = (str: String) => {
+    def const[A](valor: A) : Parser[A] = (str: String) => {
       this.apply(str).map(resultado => (valor, resultado._2))
     }
 

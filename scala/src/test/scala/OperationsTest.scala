@@ -152,16 +152,6 @@ class OperationsTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(sepByParser.apply("Naruto es un Ninja Sasuke es un Ninja bokita"),
           Success((List("Naruto","Sasuke","bokita"),44)))
       }
-
-      "fede y las venezolanas" in {
-        val sepByParser =
-          (new StringParser("/fede:") <|> new StringParser("/venezolana:"))
-          .sepBy(((AlphaNumParser.*) <|> new CharParser(' ')))
-        assertParsesSucceededWithResult(sepByParser.apply("/fede: sadasddad sdsdsad /venezolana: sdadsdds /fede:"),
-          Success((List("Naruto","Sasuke","bokita"),44)))
-      }
-
-
     }
 
     "const" - {
