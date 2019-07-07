@@ -1,6 +1,6 @@
 import Musica._
 import TiposParser._
-import PlayAudio._
+import MusicParserV2._
 import org.scalatest.{FreeSpec, Matchers}
 
 import scala.util.Success
@@ -144,11 +144,11 @@ class MusicaTests extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(MelodiaParser.apply("4C1/2 4G1/2 4F1/2 4C1/8 4C1/4 5C1/2 4A1/2 4F1/8 4F1/4 4E1/2 4D1/2"), Success((List(Sonido(Tono(4,C),Blanca), Sonido(Tono(4,G),Blanca), Sonido(Tono(4,F),Blanca), Sonido(Tono(4,C),Corchea), Sonido(Tono(4,C),Negra), Sonido(Tono(5,C),Blanca), Sonido(Tono(4,A),Blanca), Sonido(Tono(4,F),Corchea), Sonido(Tono(4,F),Negra), Sonido(Tono(4,E),Blanca), Sonido(Tono(4,D),Blanca)),65)))
       }
 
-      "al parsear el feliz cumple devuelve success" in {
-        assertParsesSucceededWithResult(MelodiaParser.apply("4C1/4 4C1/4 4D1/2 4C1/4 4F1/2 4E1/2 4C1/8 4C1/4 4D1/2 4C1/2 4G1/2 4F1/2 4C1/8 4C1/4 5C1/2 4A1/2 4F1/8 4F1/4 4E1/2 4D1/2"), Success())
+      "al parsear el feliz cumple completo devuelve success" in {
+        assertParsesSucceededWithResult(MelodiaParser.apply("4C1/4 4C1/4 4D1/2 4C1/4 4F1/2 4E1/2 4C1/8 4C1/4 4D1/2 4C1/2 4G1/2 4F1/2 4C1/8 4C1/4 5C1/2 4A1/2 4F1/8 4F1/4 4E1/2 4D1/2"), Success((List(Sonido(Tono(4,C),Negra), Sonido(Tono(4,C),Negra), Sonido(Tono(4,D),Blanca), Sonido(Tono(4,C),Negra), Sonido(Tono(4,F),Blanca), Sonido(Tono(4,E),Blanca), Sonido(Tono(4,C),Corchea), Sonido(Tono(4,C),Negra), Sonido(Tono(4,D),Blanca), Sonido(Tono(4,C),Blanca), Sonido(Tono(4,G),Blanca), Sonido(Tono(4,F),Blanca), Sonido(Tono(4,C),Corchea), Sonido(Tono(4,C),Negra), Sonido(Tono(5,C),Blanca), Sonido(Tono(4,A),Blanca), Sonido(Tono(4,F),Corchea), Sonido(Tono(4,F),Negra), Sonido(Tono(4,E),Blanca), Sonido(Tono(4,D),Blanca)),119)))
       }
-      "al parsear la cancion bonus parte 2 devuelve success" in {
-        assertParsesSucceededWithResult(MelodiaParser.apply("4AM1/8 5C1/8 5C#1/8 5C#1/8 5D#1/8 5C1/8 4A#1/8 4G#1/2 - 4A#1/8 4A#1/8 5C1/4 5C#1/8 4A#1/4 4G#1/2 5G#1/4 5G#1/4 5D#1/2"), Success())
+      "al parsear la cancion bonus completa devuelve success" in {
+        assertParsesSucceededWithResult(MelodiaParser.apply("4AM1/8 5C1/8 5C#1/8 5C#1/8 5D#1/8 5C1/8 4A#1/8 4G#1/2 - 4A#1/8 4A#1/8 5C1/4 5C#1/8 4A#1/4 4G#1/2 5G#1/4 5G#1/4 5D#1/2"), Success((List(Acorde(List(Tono(4,A), Tono(4,Cs), Tono(4,E)),Corchea), Sonido(Tono(5,C),Corchea), Sonido(Tono(5,Cs),Corchea), Sonido(Tono(5,Cs),Corchea), Sonido(Tono(5,Ds),Corchea), Sonido(Tono(5,C),Corchea), Sonido(Tono(4,As),Corchea), Sonido(Tono(4,Gs),Blanca), Silencio(Negra), Sonido(Tono(4,As),Corchea), Sonido(Tono(4,As),Corchea), Sonido(Tono(5,C),Negra), Sonido(Tono(5,Cs),Corchea), Sonido(Tono(4,As),Negra), Sonido(Tono(4,Gs),Blanca), Sonido(Tono(5,Gs),Negra), Sonido(Tono(5,Gs),Negra), Sonido(Tono(5,Ds),Blanca)),117)))
       }
 
      }
