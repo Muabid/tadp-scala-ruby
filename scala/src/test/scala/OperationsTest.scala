@@ -48,37 +48,37 @@ class OperationsTest extends FreeSpec with Matchers {
     "opt" -{
       "al crear un parser opcional y darle algo invalido, da success vacio" in {
         val optionalParser = new CharParser('a').opt
-        assertParsesSucceededWithResult(optionalParser.apply("blon"),Success(("",0)))
+        assertParsesSucceededWithResult(optionalParser.apply("blon"),Success((None,0)))
       }
       "al hacer el parser de tal vez in (ejemplo) y se parsea infija da success infija " in {
         val talVezIn = new StringParser("in").opt <> new StringParser("fija")
-        assertParsesSucceededWithResult(talVezIn.apply("infija"),Success((("in","fija"),6)))
+        assertParsesSucceededWithResult(talVezIn.apply("infija"),Success(((Some("in"),"fija"),6)))
       }
       "al hacer el parser de tal vez in (ejemplo) y se parsea fija da success fija " in {
         val talVezIn = new StringParser("in").opt <> new StringParser("fija")
-        assertParsesSucceededWithResult(talVezIn.apply("fija"),Success((("","fija"),4)))
+        assertParsesSucceededWithResult(talVezIn.apply("fija"),Success(((None,"fija"),4)))
       }
       "al parsear vamo los pibeh en el parcer concat de string con un char  opcional de h, da success" in {
         val optionalParser = new StringParser("vamo los pibe") <> new CharParser('h').opt
-        assertParsesSucceededWithResult(optionalParser.apply("vamo los pibeh"),Success((("vamo los pibe",'h'),14)))
+        assertParsesSucceededWithResult(optionalParser.apply("vamo los pibeh"),Success((("vamo los pibe",Some('h')),14)))
       }
       "al parsear vamo los pibe en el parcer concat de string con un char  opcional de h, da success" in {
         val optionalParser = new StringParser("vamo los pibe") <> new CharParser('h').opt
-        assertParsesSucceededWithResult(optionalParser.apply("vamo los pibe"),Success((("vamo los pibe",""),13)))
+        assertParsesSucceededWithResult(optionalParser.apply("vamo los pibe"),Success((("vamo los pibe",None),13)))
       }
       "al parsear vacio en voidParser pero con optional da success" in {
         val optionalParser = VoidParser.opt
-        assertParsesSucceededWithResult(optionalParser.apply(""),Success(("",0)))
+        assertParsesSucceededWithResult(optionalParser.apply(""),Success((None,0)))
       }
       "al definir una funcion en ruby sin parentesis da success" in {
         val optionalParser = new StringParser("def function ") <>
           new CharParser('(').opt <> new StringParser("parametro") <> new CharParser(')').opt
-        assertParsesSucceededWithResult(optionalParser.apply("def function parametro"),Success((((("def function " ,""),"parametro"),""),22)))
+        assertParsesSucceededWithResult(optionalParser.apply("def function parametro"),Success((((("def function " ,None),"parametro"),None),22)))
       }
       "al definir una funcion en ruby con parentesis da success" in {
         val optionalParser = new StringParser("def function ") <>
           new CharParser('(').opt <> new StringParser("parametro") <> new CharParser(')').opt
-        assertParsesSucceededWithResult(optionalParser.apply("def function (parametro)"),Success((((("def function " ,'('),"parametro"),')'),24)))
+        assertParsesSucceededWithResult(optionalParser.apply("def function (parametro)"),Success((((("def function " ,Some('(')),"parametro"),Some(')')),24)))
       }
     }
     "*" - {
@@ -142,7 +142,7 @@ class OperationsTest extends FreeSpec with Matchers {
       }
       "al hacer apply de 1-22-3-4-5-6 a un sepByParser de digir pasado char(-) da failure ya que despues del 2 hay otro 2 y no se puede parsear con el segundo parser" in {
         val sepByParser =  DigitParser.sepBy(new CharParser('-'))
-        assertParseFailed(sepByParser.apply("1-22-3-4-5-6").get)
+        assertParsesSucceededWithResult(sepByParser.apply("1-22-3-4-5-6"),Success((List('1','2'),3)))
       }
       "al hacer apply de Naruto es un Ninja Sasuke es un Ninja bokita" in {
         val sepByParser =  (new StringParser("Naruto") <|>
@@ -152,16 +152,6 @@ class OperationsTest extends FreeSpec with Matchers {
         assertParsesSucceededWithResult(sepByParser.apply("Naruto es un Ninja Sasuke es un Ninja bokita"),
           Success((List("Naruto","Sasuke","bokita"),44)))
       }
-
-      "fede y las venezolanas" in {
-        val sepByParser =
-          (new StringParser("/fede:") <|> new StringParser("/venezolana:"))
-          .sepBy(((AlphaNumParser.*) <|> new CharParser(' ')))
-        assertParsesSucceededWithResult(sepByParser.apply("/fede: sadasddad sdsdsad /venezolana: sdadsdds /fede:"),
-          Success((List("Naruto","Sasuke","bokita"),44)))
-      }
-
-
     }
 
     "const" - {
