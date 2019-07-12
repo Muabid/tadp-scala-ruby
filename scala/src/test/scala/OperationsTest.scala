@@ -15,24 +15,12 @@ class OperationsTest extends FreeSpec with Matchers {
   "Operations" - {
     "satisfies" - {
       " al aplicar alon a un parser satisfecho con una funcion que rompe si la longitud no es 4, el resultado es success" in {
-        val tiene4Caracteres = (str:String) => str.length == 4
-        val satisfiedParser = new CharParser('a').satisfies(tiene4Caracteres)
-        assertParsesSucceededWithResult(satisfiedParser.apply("alon"), Success('a', 1))
+        val satisfiedParser = new CharParser('a').satisfies((c:Char) => c == 'a')
+        assertParsesSucceededWithResult(satisfiedParser("alon"), Success('a', 1))
       }
-      "al aplicar blon a un parser satisfecho con una funcion que rompe si la longitud no es 4, el resultado es Failure por el parser" in {
-        val tiene4Caracteres = (str:String) => str.length == 4
-        val satisfiedParser = new CharParser('a').satisfies(tiene4Caracteres)
-        assertParseFailed(satisfiedParser.apply("blon").get)
-      }
-      "al aplicar alon a un parser satisfecho con una funcion que rompe si la longitud no es 5, el resultado es Failure por la condicion" in {
-        val tiene5Caracteres = (str:String) => str.length == 5
-        val satisfiedParser = new CharParser('a').satisfies(tiene5Caracteres)
+      "Se parsea alon con CharParser('a') de forma correcta, no cumple la condición d ser 'b'" in {
+        val satisfiedParser = new CharParser('a').satisfies((c:Char) => c == 'b')
         assertParseFailed(satisfiedParser.apply("alon").get)
-      }
-      "al aplicar alon a un parser concat satisfecho con la condicion de lenght ==4 con 1 parser de string al y uno de char o da success" in {
-        val tiene4Caracteres = (str:String) => str.length == 4
-        val satisfiedParser = (new StringParser("al") <> new CharParser('o')).satisfies(tiene4Caracteres)
-        assertParsesSucceededWithResult(satisfiedParser.apply("alon"),Success((("al",'o'),3)))
       }
       "al aplicar alon a un parser leftmost satisfecho con la condicion head == b con 1 parser de string al y uno de char o da Failure" in {
         val empiezaCon_b = (str:String) => str.charAt(0) == 'b'

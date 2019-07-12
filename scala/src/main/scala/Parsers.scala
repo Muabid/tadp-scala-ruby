@@ -45,9 +45,9 @@ package object TiposParser {
       (this <> parser).map((res) => res._1)(str)
     }
 
-    def satisfies(condicion: String => Boolean): Parser[T] = (str: String) => {
+    def satisfies(condicion: T => Boolean): Parser[T] = (str: String) => {
       this.apply(str) match {
-        case Success(x) => if (condicion(str)) Success(x) else Failure(new ParserException("No se cumple la condicion dada"))
+        case Success(x) => if (condicion(x._1)) Success(x) else Failure(new ParserException("No se cumple la condicion dada"))
         case Failure(x) => Failure(x)
       }
     }
@@ -117,15 +117,15 @@ package object TiposParser {
 
   class CharParser(caracter: Char) extends Parser[Char] {
     def apply(stringAParsear: String): ParseResult[Char] = {
-      AnyCharParser.satisfies(str => str.head == caracter)(stringAParsear)
+      AnyCharParser.satisfies(c => c == caracter)(stringAParsear)
     }
   }
 
   val VoidParser = AnyCharParser.const(())
 
-  val LetterParser = AnyCharParser.satisfies(str => str.head.isLetter)
+  val LetterParser = AnyCharParser.satisfies(c => c.isLetter)
 
-  val DigitParser = AnyCharParser.satisfies(str => str.head.isDigit)
+  val DigitParser = AnyCharParser.satisfies(c => c.isDigit)
 
   val AlphaNumParser = LetterParser <|> DigitParser
 
