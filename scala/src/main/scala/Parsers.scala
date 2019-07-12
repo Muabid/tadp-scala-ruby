@@ -53,14 +53,11 @@ package object TiposParser {
     }
 
     def opt: Parser[Option[T]] = (str: String) => {
-      this.apply(str) match {
-        case Success((resultado, charsLeidos)) => Success((Some(resultado), charsLeidos))
-        case Failure(_) => Success((None, 0))
-      }
+      (this.map(res => Some(res)) <|> VoidAutistParser.const(None))(str)
     }
 
     def * : Parser[List[T]] = (str: String) => {
-      this.apply(str) match {
+      this(str) match {
         case Failure(_) => Success((List(), 0))
         case Success((resParseo, charsParseados)) => {
           val (listaResultados, charsTotalesLista) = this.*(str.substring(charsParseados)).get
@@ -98,18 +95,13 @@ package object TiposParser {
       this.apply(str).map(resultado => (f(resultado._1), resultado._2))
     }
 
-
   }
 
   object AnyCharParser extends Parser[Char] {
-    def apply(stringAParsear: String): ParseResult[Char] = {
-      verificarVacio(stringAParsear).map(_.head).map((_, 1))
-    }
-
-    def verificarVacio(string: String): Try[String] = {
-      string match {
-        case "" => Failure(new ParserException("El string estaba vacio"))
-        case _ => Success(string)
+    def apply(str: String): ParseResult[Char] = {
+      str match {
+        case "" => Failure(new ParserException("String vacío"))
+        case _ => Success(str).map(_.head).map((_, 1))
       }
     }
   }
@@ -119,6 +111,10 @@ package object TiposParser {
     def apply(stringAParsear: String): ParseResult[Char] = {
       AnyCharParser.satisfies(c => c == caracter)(stringAParsear)
     }
+  }
+
+  val VoidAutistParser: Parser[Unit] = (_: String)=> {
+      Success(((),0))
   }
 
   val VoidParser = AnyCharParser.const(())
