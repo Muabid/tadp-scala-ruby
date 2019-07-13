@@ -1,8 +1,9 @@
 import Musica.A
+import TiposParser.VoidAutistParser
 
 import scala.runtime.Nothing$
 import scala.util
-import scala.util.{Failure, Success, Try, Either}
+import scala.util.{Either, Failure, Success, Try}
 //Parsers.scala:
 
 // Todos reciben un string y devuelven un... estado? "Error de parseo" o "Parseo exitoso"
@@ -53,17 +54,11 @@ package object TiposParser {
     }
 
     def opt: Parser[Option[T]] = (str: String) => {
-      (this.map(res => Some(res)) <|> VoidAutistParser.const(None))(str)
+      (this.map(res => Some(res)) <|> new VoidAutistParser(None))(str)
     }
 
     def * : Parser[List[T]] = (str: String) => {
-      this(str) match {
-        case Failure(_) => Success((List(), 0))
-        case Success((resParseo, charsParseados)) => {
-          val (listaResultados, charsTotalesLista) = this.*(str.substring(charsParseados)).get
-          Success(resParseo :: listaResultados, charsParseados + charsTotalesLista)
-        }
-      }
+      ((this <> this.*).map{ case (a,b) => {a::b}} <|> new VoidAutistParser(List()))(str)
     }
 
     def + : Parser[List[T]] = (str: String) => {
@@ -75,10 +70,9 @@ package object TiposParser {
 
     def sepBy[A](nuevoParser: Parser[A]): Parser[List[T]] = (str: String) => {
       (this <~ nuevoParser).+.apply(str) match {
-
-        case Success(tuplaKleene) => {
-          this.apply(str.substring(tuplaKleene._2)) match {
-            case Success(tuplaFinal) => Success((tuplaKleene._1 :+ tuplaFinal._1, tuplaFinal._2 + tuplaKleene._2))
+        case Success((res1,readed1)) => {
+          this.apply(str.substring(readed1)) match {
+            case Success((res2,readed2)) => Success((res1 :+ res2, readed2 + readed1))
             case Failure(_) => Failure(new ParserException("el ultimo grupo del string no se puede parsear"))
           }
         }
@@ -113,8 +107,8 @@ package object TiposParser {
     }
   }
 
-  val VoidAutistParser: Parser[Unit] = (_: String)=> {
-      Success(((),0))
+  class VoidAutistParser[A](empty : A) extends Parser[A]{
+    override def apply(v1: String): ParseResult[A] = Success((empty,0))
   }
 
   val VoidParser = AnyCharParser.const(())
