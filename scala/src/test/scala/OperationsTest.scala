@@ -132,6 +132,19 @@ class OperationsTest extends FreeSpec with Matchers {
         val sepByParser =  DigitParser.sepBy(new CharParser('-'))
         assertParsesSucceededWithResult(sepByParser.apply("1-22-3-4-5-6"),Success((List('1','2'),3)))
       }
+      "al hacer apply de 1 a un sepByParser de digit da success" in {
+        val sepByParser =  DigitParser.sepBy(new CharParser('-'))
+        assertParsesSucceededWithResult(sepByParser.apply("1"),Success((List('1'),1)))
+      }
+      "al hacer apply de naruto a un sepByParser de string naruto da success" in {
+        val sepByParser =  new StringParser("naruto").sepBy(new CharParser('A'))
+        assertParsesSucceededWithResult(sepByParser.apply("naruto"),Success((List("naruto"),6)))
+      }
+      "al hacer apply de narutowdadasdasd a un sepByParser de string naruto da success" in {
+        val sepByParser =  new StringParser("naruto").sepBy(new CharParser('A'))
+        assertParsesSucceededWithResult(sepByParser.apply("narutowdadasdasd"),Success((List("naruto"),6)))
+      }
+
       "al hacer apply de Naruto es un Ninja Sasuke es un Ninja bokita" in {
         val sepByParser =  (new StringParser("Naruto") <|>
           new StringParser("Sasuke") <|>

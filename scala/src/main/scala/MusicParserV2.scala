@@ -78,7 +78,7 @@ object MusicParserV2 extends App {
 
   object MelodiaParser extends Parser[Melodia]{
     def apply(str: String): ParseResult[Melodia] = {
-      (AcordeParser <|> SilencioParser <|> SonidoParser ).sepBy(new CharParser(' '))(str)
+      (SonidoParser <|> SilencioParser <|> AcordeParser ).sepBy(new CharParser(' '))(str)
     }
   }
 

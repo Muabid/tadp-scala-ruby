@@ -76,9 +76,11 @@ package object TiposParser {
             case Failure(_) => Failure(new ParserException("el ultimo grupo del string no se puede parsear"))
           }
         }
-        case other => other
+        case Failure(e) => this.map(res=> List(res)).apply(str)
       }
     }
+
+
 
 
     def const[A](valor: A): Parser[A] = (str: String) => {
